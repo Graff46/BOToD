@@ -35,32 +35,51 @@ button:active, button:active > a {
 }
 
 header {
-	background-color: var(--f-blue-color);
 	margin: 0;
 	padding: 0;
+	box-shadow: 0px -5px 10px 0px #4c5b68 inset;
+	background-color: #647888;
+	display: flex;
+	justify-content: space-between;
+}
+
+header * {
+	color: var(--main-color);
 }
 
 header a {
 	text-decoration: none;
-	color: #52687b;
 }
 
-header > div:first-child > a > h1 {
-	margin-top: 0;
-	margin-bottom: 10px;
+header > div:first-child {
+	display: flex;
+}
+
+header > div:first-child > a:last-child {
+	padding: 0 5px;
+	align-self: center;
+	margin-bottom: 1px;
+}
+
+header > div:first-child > a:first-child > h1 {
 	padding: 5px;
-	color: #52687b;
-	background-color: var(--s-blue-color);
+	margin: 0;
 	cursor: default;
+	color: var(--main-color);
 }
 
 header > div:last-child {
-	padding: 0 5px;
+	padding: 0 1rem;
+	margin-bottom: 2px;
+	align-self: center;
+}
+
+header > div:last-child > * {
+	margin-left: 5px;
 }
 
 header > div:last-child > button {
 	background-color: var(--s-blue-color);
-	margin-bottom: 1px;
 }
 
 details {
@@ -76,4 +95,12 @@ details > summary {
 
 details:open > summary {
 	background-color: var(--f-blue-color);
+}
+
+a:hover, a:focus {
+	text-decoration: underline;
+}
+
+a:active {
+	color: #a9d9ff;
 }
