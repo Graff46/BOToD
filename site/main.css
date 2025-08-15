@@ -1,0 +1,79 @@
+:root {
+	--f-blue-color: #aebecc;
+	--s-blue-color: #cddce9;
+	--main-color: #e2ecf4;
+
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	background-color: var(--main-color);
+	font-family: sans-serif;
+	color: #5d657b;
+	display: flex;
+	flex-direction: column;
+}
+
+button {
+	border-radius: 0;
+	border: none;
+	height: 25px;
+}
+
+button:hover {
+	box-shadow: 0px 7px 10px 0px #eaf5ff inset;
+}
+
+button:hover, button:hover > a {
+	text-decoration: underline !important;
+}
+
+button:active, button:active > a {
+	color: brown !important;
+}
+
+header {
+	background-color: var(--f-blue-color);
+	margin: 0;
+	padding: 0;
+}
+
+header a {
+	text-decoration: none;
+	color: #52687b;
+}
+
+header > div:first-child > a > h1 {
+	margin-top: 0;
+	margin-bottom: 10px;
+	padding: 5px;
+	color: #52687b;
+	background-color: var(--s-blue-color);
+	cursor: default;
+}
+
+header > div:last-child {
+	padding: 0 5px;
+}
+
+header > div:last-child > button {
+	background-color: var(--s-blue-color);
+	margin-bottom: 1px;
+}
+
+details {
+	background-color: var(--s-blue-color);
+	border-radius: 2px;
+	padding: 2px;
+	margin: 0.5rem;
+}
+
+details > summary {
+	cursor: pointer;
+}
+
+details:open > summary {
+	background-color: var(--f-blue-color);
+}

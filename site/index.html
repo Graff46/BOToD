@@ -1,11 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Test</title>
-    </head>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <body style="background-color: grey">
-      <h1>Test</h1>
-    </body>
+		<title>BOToD - General</title>
+
+		<script src="https://cdn.jsdelivr.net/gh/Graff46/BOToD@main/src/BOToD.js"></script>
+		<script src="./index.js"></script>
+
+		<link rel="stylesheet" href="./main.css">
+		<link rel="stylesheet" href="./index.css">
+	</head>
+
+	<body>
+		<header>
+			<div>
+				<a href="./"><h1>BOToD</h1></a>
+			</div>
+			<div>
+				<button><a href="./">Главная</a></button>
+				<button><a href="/doc">Документация</a></button>
+				<button><a target="_blank" href="https://github.com/Graff46/BOToD">GitHub</a></button>
+				<button style="float: inline-end">&nbsp;🇷🇺&nbsp;</button>
+			</div>
+		</header>
+
+		<main id="cpt">
+			<div></div>
+			<section>
+				<div></div>
+				<span> 
+					<b>&emsp;BOToD (Bind Object To DOM)</b>  — Библиотека для двустороннего реактивного связывания <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">JavaScript</a> данных c <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model">DOM</a> элементами. Для отслеживания <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a> он лениво-рекурсивно оборачивается в <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>.
+					<details>
+						<summary>Лениво-рекурсивное обёртывание</summary>
+						<p>Object на нулевой вложенности оборачивается в Proxy обычным способом. Далее, дочерние Object'ы оборачиваются в Proxy, если их пытались читать, причём именно при установке связываний.</p>
+					</details>
+					Вы скажите: Таких фреймворков и библиотек достаточно много. И будете правы, но во всём есть нюансы...
+				</span>
+				<div></div>
+			</section>
+			<div></div>
+		</main>
+		
+	</body>
 </html>

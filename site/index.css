@@ -1,0 +1,44 @@
+
+body {
+	height: 100%;
+}
+
+#cpt {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+}
+
+#cpt > div:first-child, #cpt > div:last-child {
+	flex-grow: 2;
+	flex-shrink: 1;
+}
+
+#cpt > section {
+	flex-grow: 1;
+	flex-shrink: 2;
+
+	display: flex;
+	flex-direction: row;
+}
+
+#cpt > section > div:first-child, #cpt > section > div:last-child {
+	flex-grow: 2;
+	flex-shrink: 1;
+}
+
+#cpt > section > div:first-child {
+	border-right: 1px solid #b9c9d7;
+}
+
+#cpt > section > span {
+	flex-grow: 1;
+	flex-shrink: 2;
+	max-width: 750pt;
+	padding-left: 5px;
+}
+
+/* #cpt > section > span::first-letter {
+	text-transform: uppercase;
+	font-size: 20pt;
+} */
