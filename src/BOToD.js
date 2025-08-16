@@ -26,13 +26,15 @@ var App = (() => {
 
 			el2handlerBind.set(el, story);
 
-			parents.get(currentObjProp.obj).forEach(obj => {
-				const story = bindReset.get(obj);
-				if (story)
-					story.add(el);
-				else
-					bindReset.set(obj, (new Set()).add(el));
-			});
+			if (story = parents.get(currentObjProp.obj)) {
+				story.forEach(obj => {
+					const story = bindReset.get(obj);
+					if (story)
+						story.add(el);
+					else
+						bindReset.set(obj, (new Set()).add(el));
+				});
+			}
 
 			story = bindUpd.get(currentObjProp.obj);
 			if (!story) {
