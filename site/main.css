@@ -1,7 +1,9 @@
 :root {
 	--f-blue-color: #aebecc;
-	--s-blue-color: #cddce9;
-	--main-color: #e2ecf4;
+	--s-blue-color: #a3b7c6;
+	--dark-blue-color: #647888;
+	--main-color: #c9d2d9;
+	--txt-color: #5d657b;
 
 	height: 100%;
 }
@@ -11,9 +13,13 @@ body {
 	padding: 0;
 	background-color: var(--main-color);
 	font-family: sans-serif;
-	color: #5d657b;
+	color: var(--txt-color);
 	display: flex;
 	flex-direction: column;
+}
+
+body > main {
+	line-height: 1.5rem;
 }
 
 button {
@@ -38,7 +44,7 @@ header {
 	margin: 0;
 	padding: 0;
 	box-shadow: 0px -5px 10px 0px #4c5b68 inset;
-	background-color: #647888;
+	background-color: var(--dark-blue-color);
 	display: flex;
 	justify-content: space-between;
 }
@@ -53,6 +59,7 @@ header a {
 
 header > div:first-child {
 	display: flex;
+	flex-wrap: wrap;
 }
 
 header > div:first-child > a:last-child {

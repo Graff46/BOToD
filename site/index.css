@@ -28,17 +28,18 @@ body {
 }
 
 #cpt > section > div:first-child {
-	border-right: 1px solid #b9c9d7;
+	border-right: 2px solid var(--s-blue-color);
 }
 
 #cpt > section > span {
 	flex-grow: 1;
 	flex-shrink: 2;
 	max-width: 750pt;
-	padding-left: 5px;
+	padding: 1rem 0.5rem;
 }
 
-/* #cpt > section > span::first-letter {
-	text-transform: uppercase;
-	font-size: 20pt;
-} */
+#caption > p {
+	margin-left: 1rem;
+	border-left: 0.25rem solid var(--s-blue-color);
+	padding-left: 0.5rem;
+}
