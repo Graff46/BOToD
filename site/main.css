@@ -43,7 +43,6 @@ button:active, button:active > a {
 header {
 	margin: 0;
 	padding: 0;
-	box-shadow: 0px -5px 10px 0px #4c5b68 inset;
 	background-color: var(--dark-blue-color);
 	display: flex;
 	justify-content: space-between;

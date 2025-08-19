@@ -1,0 +1,97 @@
+body {
+	height: 100%;
+}
+
+body > main {
+	height: 100%;
+
+	display: inline-grid;
+	grid-template-columns: 15rem 0px auto;
+	grid-template-rows: 100%;
+	overflow: hidden;
+}
+
+@media screen and (max-width: 710px) {
+	body > main:has(details[open])  {
+		grid-template-columns: 0px auto auto;
+	}
+
+	body > main:has(details[open]) > section  {
+		margin-left: 2.75rem;
+	}
+
+	body > main:has(details[open]) :where(aside, section) {
+		grid-area: 1 / 3;
+	}
+
+	body > main > details[open] {
+		grid-area: 1 / 1;
+		width: 2.75rem;
+		margin-left: 15rem;
+		z-index: 1;
+		border-right: 2px solid var(--dark-blue-color);
+	}
+
+	body > main {
+		grid-template-columns: 0px 2.75rem auto;
+	}
+}
+
+body > main > aside {
+	max-width: 15rem;
+	background-color: #3f3e4f;
+	z-index: 1;
+	padding: 0.5rem;
+	padding-top: 1rem;
+
+	display: grid;
+	grid-template-columns: 100%;
+	align-content: start;
+}
+
+body > main > :where(aside, section) {
+	overflow: hidden;
+}
+
+body > main > aside > a {
+	margin: auto;
+	font-style: normal;
+	text-decoration: none;
+	color: #bfb797;
+}
+
+body > main > aside > b {
+	margin-top: 1rem;
+}
+
+body > main > aside > b > a {
+	text-decoration: none;
+	color: var(--f-blue-color);
+}
+
+body > main > details {
+	background-color: var(--s-blue-color);
+
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	z-index: 2;
+}
+
+body > main > details > summary {
+	height: 100%;
+
+	display: grid;
+	align-content: center;
+	justify-content: center;
+}
+
+body > main > details > summary::marker {
+	content: '';
+}
+
+body > main > section {
+	padding: 1rem;
+	overflow-y: auto;
+	scroll-behavior: smooth;
+}
