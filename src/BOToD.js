@@ -5,12 +5,14 @@ var App = (() => {
 	return (settingBits = 0) => {
 		var eventType = settingBits & 0b1 ? 'input' : 'change';
 
-		var currentObjProp  = null;
+		var rootObj			= null;
+		var currentObjProp	= null;
+
 		var repeatStore    	= new WeakMap();
 
-		var el2handlerBind 	= new WeakMap();
-		var el2handlerRept 	= new WeakMap();
-		var El2group     	= new WeakMap();
+		var el2handlerBind	= new WeakMap();
+		var el2handlerRept	= new WeakMap();
+		var El2group		= new WeakMap();
 		var el2eventHandler	= new WeakMap();
 
 		var bindReset		= new WeakMap();
@@ -28,9 +30,9 @@ var App = (() => {
 
 			if (story = parents.get(currentObjProp.obj)) {
 				story.forEach(obj => {
-					const story = bindReset.get(obj);
-					if (story)
-						story.add(el);
+					const saved = bindReset.get(obj);
+					if (saved)
+						saved.add(el);
 					else
 						bindReset.set(obj, (new Set()).add(el));
 				});
@@ -47,6 +49,8 @@ var App = (() => {
 				else
 					story[currentObjProp.prop] = (new Set()).add(el);
 			}
+
+			currentObjProp = null;
 		}
 
 		var addRepeat = (handler, el, group) => {
@@ -62,8 +66,13 @@ var App = (() => {
 					repeatStore.set(obj, (new Set()).add(el));
 			}
 
+			if (!currentObjProp)
+				return repeatStore.set(rootObj, (new Set()).add(el));
+
 			insertHandler(currentObjProp.obj[currentObjProp.prop]);
 			parents.get(currentObjProp.obj[currentObjProp.prop]).forEach(insertHandler);
+
+			currentObjProp = null;
 		}
 
 		var _unbind = (el, onlyBind) => {
@@ -165,7 +174,7 @@ var App = (() => {
 		}
 
 		var extInterface = {
-			buildData: obj => buildData(obj),
+			buildData: obj => rootObj = buildData(obj),
 
 			bind: (elSel, hndl, args) => {
 				const callback = (el, cop) => cop.obj[cop.prop] = el.value;
@@ -197,44 +206,44 @@ var App = (() => {
 			repeat: (el, iterHandle, bindHandle, xrBindCallback, updGroup = null) => {
 				var elm = getEl(el);
 
-                needReadGetterFlag = true;
-                var iter = iterHandle();
-                needReadGetterFlag = false;
+				needReadGetterFlag = true;
+				var iter = iterHandle();
+				needReadGetterFlag = false;
 
-                var group = Object.create(null);
+				var group = Object.create(null);
 
-                addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallback, group), elm, group);
+				addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallback, group), elm, group);
 
-                if (updGroup) {
-                    for (const k in updGroup) {
-                        if (iter[k])
-                            group[k] = updGroup[k];
-                        else
-                            updGroup[k].remove();
-                    }
-                }
-                
-                var newEl = null
-                var fragment = new DocumentFragment();
-                for (const key in iter) {
-                    if ((!updGroup) || (!(key in updGroup))) {
-                        newEl = elm.cloneNode(true);
-                        newEl.hidden = false;
-                        newEl.setAttribute('__key', key);
+				if (updGroup) {
+					for (const k in updGroup) {
+						if (iter[k])
+							group[k] = updGroup[k];
+						else
+							updGroup[k].remove();
+					}
+				}
+				
+				var newEl = null
+				var fragment = new DocumentFragment();
+				for (const key in iter) {
+					if ((!updGroup) || (!(key in updGroup))) {
+						newEl = elm.cloneNode(true);
+						newEl.hidden = false;
+						newEl.setAttribute('__key', key);
 
-                        group[key] = newEl;
+						group[key] = newEl;
 
-                        if (xrBindCallback)
-                            extInterface.xrBind(newEl, bindHandle, xrBindCallback, false, key);
-                        else if (bindHandle)
-                            extInterface.bind(newEl, bindHandle, key);
+						if (xrBindCallback)
+							extInterface.xrBind(newEl, bindHandle, xrBindCallback, false, key);
+						else if (bindHandle)
+							extInterface.bind(newEl, bindHandle, key);
 
-                        fragment.append(newEl);
-                    }
-                }
+						fragment.append(newEl);
+					}
+				}
 
-                elm.hidden = true;
-                elm.after(fragment);
+				elm.hidden = true;
+				elm.after(fragment);
 			},
 
 			unbind: _unbind,
