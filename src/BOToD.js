@@ -110,8 +110,7 @@ var App = (() => {
 					} else if (!(obj2prox.has(target)))
 						obj2prox.set(target, receiver);
 
-					if (prnt)
-						parents.set(receiver, (new Set(parents.get(prnt) )).add(prnt));
+					parents.set(receiver, (new Set(parents.get(prnt) )).add(prnt));
 
 					if (needReadGetterFlag) {
 						currentObjProp 		= Object.create(null);
