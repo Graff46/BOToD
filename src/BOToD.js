@@ -192,7 +192,8 @@ var App = (() => {
 
 				var cObjProp = __needCurrObj ? Object.assign(Object.create(null), currentObjProp) : null;
 
-				addBind(handler.bind(null, elm, rptKey), extInterface.xrBind.bind(null, elm, handler, callback, __needCurrObj, rptKey), elm);
+				if (currentObjProp)
+					addBind(handler.bind(null, elm, rptKey), extInterface.xrBind.bind(null, elm, handler, callback, __needCurrObj, rptKey), elm);
 
 				elm.removeEventListener(eventType, el2eventHandler.get(elm));
 
@@ -212,7 +213,8 @@ var App = (() => {
 
 				var group = Object.create(null);
 
-				addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallbackOrFlag, group), elm, group);
+				if (currentObjProp)
+					addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallbackOrFlag, group), elm, group);
 
 				if (updGroup) {
 					for (const k in updGroup) {
