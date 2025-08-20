@@ -203,7 +203,7 @@ var App = (() => {
 				}
 			},
 
-			repeat: (el, iterHandle, bindHandle, xrBindCallback, updGroup = null) => {
+			repeat: (el, iterHandle, bindHandle, xrBindCallbackOrFlag = true, updGroup) => {
 				var elm = getEl(el);
 
 				needReadGetterFlag = true;
@@ -212,7 +212,7 @@ var App = (() => {
 
 				var group = Object.create(null);
 
-				addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallback, group), elm, group);
+				addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallbackOrFlag, group), elm, group);
 
 				if (updGroup) {
 					for (const k in updGroup) {
@@ -233,10 +233,12 @@ var App = (() => {
 
 						group[key] = newEl;
 
-						if (xrBindCallback)
-							extInterface.xrBind(newEl, bindHandle, xrBindCallback, false, key);
-						else if (bindHandle)
+						if (xrBindCallbackOrFlag instanceof Function)
+							extInterface.xrBind(newEl, bindHandle, xrBindCallbackOrFlag, false, key);
+						else if (xrBindCallbackOrFlag && bindHandle)
 							extInterface.bind(newEl, bindHandle, key);
+						else if (bindHandle)
+							bindHandle(key, newEl);
 
 						fragment.append(newEl);
 					}
