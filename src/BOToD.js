@@ -106,11 +106,13 @@ var App = (() => {
 							skeepProxySetFlag = true;
 							receiver[prop] = buildData(target[prop], receiver);
 							skeepProxySetFlag = false;
+							parents.set(receiver[prop], (new Set(parents.get(receiver) )).add(receiver));
 						} 
 					} else if (!(obj2prox.has(target)))
 						obj2prox.set(target, receiver);
 
-					parents.set(receiver, (new Set(parents.get(prnt) )).add(prnt));
+					if (prnt)
+						parents.set(receiver, (new Set(parents.get(prnt) )).add(prnt));
 
 					if (needReadGetterFlag) {
 						currentObjProp 		= Object.create(null);
