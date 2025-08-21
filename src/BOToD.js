@@ -4,6 +4,7 @@ var App = (() => {
 
 	return (settingBits = 0) => {
 		var eventType = settingBits & 0b1 ? 'input' : 'change';
+		var propElForBind = settingBits & 0b10 ? 'textContent' : 'value';
 
 		var rootObj			= null;
 		var currentObjProp	= null;
@@ -20,6 +21,8 @@ var App = (() => {
 
 		var parents			= new WeakMap();
 		var obj2prox		= new WeakMap();
+
+		var skeepProxyGetFlag = false;
 
 		var addBind = (handler, resHandler, el) => {
 			let story = Object.create(null);
@@ -69,7 +72,9 @@ var App = (() => {
 			if (!currentObjProp)
 				return repeatStore.set(rootObj, (new Set()).add(el));
 
+			skeepProxyGetFlag = true;
 			insertHandler(currentObjProp.obj[currentObjProp.prop]);
+			skeepProxyGetFlag = false;
 			parents.get(currentObjProp.obj[currentObjProp.prop]).forEach(insertHandler);
 
 			currentObjProp = null;
@@ -101,23 +106,25 @@ var App = (() => {
 				get: (target, prop, receiver) => {
 					if (prop === isProxy) return true;
 
-					if (target[prop] instanceof Object) {
-						if (!(target[prop][isProxy])) {
-							skeepProxySetFlag = true;
-							receiver[prop] = buildData(target[prop], receiver);
-							skeepProxySetFlag = false;
-							parents.set(receiver[prop], (new Set(parents.get(receiver) )).add(receiver));
-						} 
-					} else if (!(obj2prox.has(target)))
-						obj2prox.set(target, receiver);
+					if (!skeepProxyGetFlag) {
+						if (target[prop] instanceof Object) {
+							if (!(target[prop][isProxy])) {
+								skeepProxySetFlag = true;
+								receiver[prop] = buildData(target[prop], receiver);
+								skeepProxySetFlag = false;
+								parents.set(receiver[prop], (new Set(parents.get(receiver) )).add(receiver));
+							} 
+						} else if (!(obj2prox.has(target)))
+							obj2prox.set(target, receiver);
 
-					if (prnt)
-						parents.set(receiver, (new Set(parents.get(prnt) )).add(prnt));
+						if (prnt)
+							parents.set(receiver, (new Set(parents.get(prnt) )).add(prnt));
 
-					if (needReadGetterFlag) {
-						currentObjProp 		= Object.create(null);
-						currentObjProp.obj 	= receiver;
-						currentObjProp.prop	= prop;
+						if (needReadGetterFlag) {
+							currentObjProp 		= Object.create(null);
+							currentObjProp.obj 	= receiver;
+							currentObjProp.prop	= prop;
+						}
 					}
 
 					return Reflect.get(target, prop, receiver);
@@ -178,8 +185,8 @@ var App = (() => {
 			buildData: obj => rootObj = buildData(obj),
 
 			bind: (elSel, hndl, args) => {
-				const callback = (el, cop) => cop.obj[cop.prop] = el.value;
-				const handler = el => el.value = hndl(args);
+				const callback = (el, cop) => cop.obj[cop.prop] = el[propElForBind];
+				const handler = el => el[propElForBind] = hndl(args);
 
 				return extInterface.xrBind(elSel, handler, callback, true);
 			},
@@ -259,3 +266,4 @@ var App = (() => {
 })();
 
 App.eventTypeInput = 0b1;
+App.textContentBinding = 0b10;
