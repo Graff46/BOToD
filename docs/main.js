@@ -1,5 +1,3 @@
-self.domenApp = 'BOToD';
-
 async function setLang(idx = 0) {
 	for (const k in Translate)
 		self[k].textContent = Translate[k][idx];

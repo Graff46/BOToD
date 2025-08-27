@@ -251,7 +251,7 @@ const themeList = {
     'zenburn': 'base16/zenburn.css'
 };
 
-var basePath = document.location.origin.concat(`/${self.domenApp}/modules/highlight/themes/`);
+var basePath = document.location.origin.concat(`/BOToD/modules/highlight/themes/`);
 
 const myApp = App();
 
