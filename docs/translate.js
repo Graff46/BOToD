@@ -17,27 +17,4 @@ const Translate = {
 		`You might say: "There are plenty of frameworks and libraries like this." And you’d be right-but the devil’s in the details...
 In many frameworks, data binding with DOM elements is defined in the markup. This library, however, handles all manipulations purely in JavaScript code.`,
 	],
-}
-
-function setLang(idx = 0) {
-	for (const k in Translate)
-		self[k].textContent = Translate[k][idx];
-}
-
-(() => {
-	var idsLang = ['🇷🇺', '🇬🇧'];
-
-	changeTranslate.addEventListener(
-		'click', 
-		event => {
-			let lid = idsLang.indexOf(event.currentTarget.textContent);
-			event.currentTarget.textContent = idsLang[lid ^= 1];
-			localStorage.setItem('langId', lid);
-			return setLang(lid);
-		}
-	);
-
-	const langId = localStorage.getItem('langId') || 0;
-	changeTranslate.textContent = idsLang[langId];
-	setLang(langId);
-})();
+};

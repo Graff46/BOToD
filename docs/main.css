@@ -2,8 +2,9 @@
 	--f-blue-color: #aebecc;
 	--s-blue-color: #a3b7c6;
 	--dark-blue-color: #647888;
-	--main-color: #c9d2d9;
-	--txt-color: #5d657b;
+	--main-color: #b9cbd9;
+	--txt-color: #575e71;
+	--int-txt-color: #13499d;
 
 	height: 100%;
 }
@@ -109,4 +110,23 @@ a:hover, a:focus {
 
 a:active {
 	color: #a9d9ff;
+}
+
+header > div:nth-child(2) {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-content: center;
+}
+
+select#codeeditortheme {
+	height: 1.5rem;
+	border: 1px solid var(--txt-color);
+	width: 100%;
+	color: var(--int-txt-color);
+	background-color: var(--s-blue-color);
+}
+
+select#codeeditortheme > option {
+	color: var(--txt-color)
 }

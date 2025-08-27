@@ -1,6 +1,7 @@
 
 body {
 	height: 100%;
+	background-image: radial-gradient(var(--s-blue-color), #f000);
 }
 
 #cpt {

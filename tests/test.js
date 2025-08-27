@@ -1,17 +1,17 @@
 const obj = {
-    key: {
-        k1: {
-            l1: {m1: 1, m11: 2,}
-        }, 
-    },
+	key: {
+		k1: {
+			l1: {m1: 1, m11: 2,}
+		}, 
+	},
 
-    one: {
-        k2: {
-            l2: {m2: 22,}
-        }
-    },
+	one: {
+		k2: {
+			l2: {m2: 22,}
+		}
+	},
 
-    two: 5,
+	two: 5,
 };
 
 const myApp = App(obj, App.eventTypeInput);
