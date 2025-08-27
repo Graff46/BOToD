@@ -251,7 +251,7 @@ const themeList = {
     'zenburn': 'base16/zenburn.css'
 };
 
-var basePath = document.location.origin.concat("/modules/highlight/themes/");
+var basePath = document.location.origin.concat(`/${self.domenApp}/modules/highlight/themes/`);
 
 const myApp = App();
 
@@ -262,4 +262,3 @@ myApp.xrBind(
 	el => self.edtheme.href = basePath.concat(themeList[el.value = localStorage.themeId || 'nord']),
 	el => self.edtheme.href = basePath.concat(themeList[localStorage.themeId = el.value])
 );
-
