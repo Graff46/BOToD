@@ -1,4 +1,4 @@
-var App = (() => {
+self.App = (() => {
 	var getEl = el => (el instanceof Element) ? el : document.querySelector(el);
 	var isProxy = Symbol('isProxy');
 
@@ -221,7 +221,7 @@ var App = (() => {
 
 				var group = Object.create(null);
 
-				if (currentObjProp)
+				if ((currentObjProp) && (xrBindCallbackOrFlag != null))
 					addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallbackOrFlag, group), elm, group);
 
 				if (updGroup) {
@@ -248,7 +248,7 @@ var App = (() => {
 						else if (xrBindCallbackOrFlag && bindHandle)
 							extInterface.bind(newEl, bindHandle, key);
 						else if (bindHandle)
-							bindHandle(key, newEl);
+							bindHandle(newEl, key);
 
 						fragment.append(newEl);
 					}
