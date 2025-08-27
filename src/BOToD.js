@@ -1,9 +1,10 @@
-var App = (() => {
+self.App = (() => {
 	var getEl = el => (el instanceof Element) ? el : document.querySelector(el);
 	var isProxy = Symbol('isProxy');
 
 	return (settingBits = 0) => {
 		var eventType = settingBits & 0b1 ? 'input' : 'change';
+		var propElForBind = settingBits & 0b10 ? 'textContent' : 'value';
 
 		var rootObj			= null;
 		var currentObjProp	= null;
@@ -20,6 +21,8 @@ var App = (() => {
 
 		var parents			= new WeakMap();
 		var obj2prox		= new WeakMap();
+
+		var skeepProxyGetFlag = false;
 
 		var addBind = (handler, resHandler, el) => {
 			let story = Object.create(null);
@@ -69,7 +72,9 @@ var App = (() => {
 			if (!currentObjProp)
 				return repeatStore.set(rootObj, (new Set()).add(el));
 
+			skeepProxyGetFlag = true;
 			insertHandler(currentObjProp.obj[currentObjProp.prop]);
+			skeepProxyGetFlag = false;
 			parents.get(currentObjProp.obj[currentObjProp.prop]).forEach(insertHandler);
 
 			currentObjProp = null;
@@ -101,22 +106,25 @@ var App = (() => {
 				get: (target, prop, receiver) => {
 					if (prop === isProxy) return true;
 
-					if (target[prop] instanceof Object) {
-						if (!(target[prop][isProxy])) {
-							skeepProxySetFlag = true;
-							receiver[prop] = buildData(target[prop], receiver);
-							skeepProxySetFlag = false;
-						} 
-					} else if (!(obj2prox.has(target)))
-						obj2prox.set(target, receiver);
+					if (!skeepProxyGetFlag) {
+						if (target[prop] instanceof Object) {
+							if (!(target[prop][isProxy])) {
+								skeepProxySetFlag = true;
+								receiver[prop] = buildData(target[prop], receiver);
+								skeepProxySetFlag = false;
+								parents.set(receiver[prop], (new Set(parents.get(receiver) )).add(receiver));
+							} 
+						} else if (!(obj2prox.has(target)))
+							obj2prox.set(target, receiver);
 
-					if (prnt)
-						parents.set(receiver, (new Set(parents.get(prnt) )).add(prnt));
+						if (prnt)
+							parents.set(receiver, (new Set(parents.get(prnt) )).add(prnt));
 
-					if (needReadGetterFlag) {
-						currentObjProp 		= Object.create(null);
-						currentObjProp.obj 	= receiver;
-						currentObjProp.prop	= prop;
+						if (needReadGetterFlag) {
+							currentObjProp 		= Object.create(null);
+							currentObjProp.obj 	= receiver;
+							currentObjProp.prop	= prop;
+						}
 					}
 
 					return Reflect.get(target, prop, receiver);
@@ -177,8 +185,8 @@ var App = (() => {
 			buildData: obj => rootObj = buildData(obj),
 
 			bind: (elSel, hndl, args) => {
-				const callback = (el, cop) => cop.obj[cop.prop] = el.value;
-				const handler = el => el.value = hndl(args);
+				const callback = (el, cop) => cop.obj[cop.prop] = el[propElForBind];
+				const handler = el => el[propElForBind] = hndl(args);
 
 				return extInterface.xrBind(elSel, handler, callback, true);
 			},
@@ -192,7 +200,8 @@ var App = (() => {
 
 				var cObjProp = __needCurrObj ? Object.assign(Object.create(null), currentObjProp) : null;
 
-				addBind(handler.bind(null, elm, rptKey), extInterface.xrBind.bind(null, elm, handler, callback, __needCurrObj, rptKey), elm);
+				if (currentObjProp)
+					addBind(handler.bind(null, elm, rptKey), extInterface.xrBind.bind(null, elm, handler, callback, __needCurrObj, rptKey), elm);
 
 				elm.removeEventListener(eventType, el2eventHandler.get(elm));
 
@@ -203,7 +212,7 @@ var App = (() => {
 				}
 			},
 
-			repeat: (el, iterHandle, bindHandle, xrBindCallback, updGroup = null) => {
+			repeat: (el, iterHandle, bindHandle, xrBindCallbackOrFlag = true, updGroup) => {
 				var elm = getEl(el);
 
 				needReadGetterFlag = true;
@@ -212,7 +221,8 @@ var App = (() => {
 
 				var group = Object.create(null);
 
-				addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallback, group), elm, group);
+				if ((currentObjProp) && (xrBindCallbackOrFlag != null))
+					addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallbackOrFlag, group), elm, group);
 
 				if (updGroup) {
 					for (const k in updGroup) {
@@ -233,10 +243,12 @@ var App = (() => {
 
 						group[key] = newEl;
 
-						if (xrBindCallback)
-							extInterface.xrBind(newEl, bindHandle, xrBindCallback, false, key);
-						else if (bindHandle)
+						if (xrBindCallbackOrFlag instanceof Function)
+							extInterface.xrBind(newEl, bindHandle, xrBindCallbackOrFlag, false, key);
+						else if (xrBindCallbackOrFlag && bindHandle)
 							extInterface.bind(newEl, bindHandle, key);
+						else if (bindHandle)
+							bindHandle(newEl, key);
 
 						fragment.append(newEl);
 					}
@@ -254,3 +266,4 @@ var App = (() => {
 })();
 
 App.eventTypeInput = 0b1;
+App.textContentBinding = 0b10;
