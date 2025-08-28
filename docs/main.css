@@ -121,7 +121,7 @@ header > div:nth-child(2) {
 
 select#codeeditortheme {
 	height: 1.5rem;
-	border: 1px solid var(--txt-color);
+	border: none;
 	width: 100%;
 	color: var(--int-txt-color);
 	background-color: var(--s-blue-color);
