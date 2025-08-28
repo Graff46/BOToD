@@ -12,6 +12,8 @@ changeTranslate.addEventListener('click', event => {
 	return setLang(lid);
 })
 
-const langId = localStorage.getItem('langId') || 0;
-changeTranslate.textContent = idsLang[langId];
-setLang(langId);
+const langId = Number(localStorage.getItem('langId') || 0);
+if (langId !== 0) {
+	changeTranslate.textContent = idsLang[langId];
+	setLang(langId);
+}

@@ -176,7 +176,7 @@ myApp.xrBind('.txt-area', () => appData.m1, el => el.value = appData.m1, (el, va
 				<ul>
 					<li id="l-6-1">Селектор или сам DOM элемент</li>
 					<li id="l-6-2">Функция возвращающая JS итерируемый объект</li>
-					<li><span id="l-6-3-1">Коллбэк аналогичен 3-му аргументу</span> <b id="tblue">bind</b> <span id="l-6-3-2">(вызывается на каждой итерации).</span> <i id="arguments3">Аргументы:</i>
+					<li><span id="l-6-3-1">Коллбэк аналогичен 3-му аргументу</span> <b class="tblue">bind</b> <span id="l-6-3-2">(вызывается на каждой итерации).</span> <i id="arguments3">Аргументы:</i>
 						<ul>
 							<li id="l-6-3-3">Ключ объекта (массива) который используется в итерации</li>
 						</ul>
@@ -186,7 +186,7 @@ myApp.xrBind('.txt-area', () => appData.m1, el => el.value = appData.m1, (el, va
 const appData = myApp.buildData({key: {m1: 1, m11: 2}});
 
 myApp.repeat('.list-input', x => appData.key, k => appData.key[k]);</code></pre>
-				<u id="four-args-title">Аргументы для реализации с четырьмя аргументами (аналогично <b id="tblue">xrBind</b>):</u>
+				<u id="four-args-title">Аргументы для реализации с четырьмя аргументами (аналогично <b class="tblue">xrBind</b>):</u>
 				<ul>
 					<li id="l-7-1">Селектор или сам DOM элемент</li>
 					<li id="l-7-2">Функция возвращающая JS итерируемый объект</li>
