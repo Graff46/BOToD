@@ -107,6 +107,7 @@ const Translate = {
 	createapp: ['Создание приложения', 'Create App'],
 	bindings: ['Связывания', 'Bindings'],
 	notes: ['Важные заметки', 'Critical notes'],
+	warnnotes: ['Не используйте аргументы в методах и функциях всверх тех, что указаны в данном руководстве!', 'Avoid using any arguments in methods and functions other than those explicitly defined in this documentation!'],
 };
 
 Translate['l-7-1'] = Translate['l-6-1'] = Translate['l-5-1'] = Translate['l-4-1'] = Translate['selector-list-2'] = Translate['selector-list'];

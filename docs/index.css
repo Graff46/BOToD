@@ -29,7 +29,7 @@ body {
 }
 
 #cpt > section > div:first-child {
-	border-right: 2px solid var(--s-blue-color);
+	border-right: 2px solid #8ba2b5;
 }
 
 #cpt > section > span {
@@ -41,6 +41,6 @@ body {
 
 #caption > p {
 	margin-left: 1rem;
-	border-left: 0.25rem solid var(--s-blue-color);
+	border-left: 0.25rem solid #8ba2b5;
 	padding-left: 0.5rem;
 }

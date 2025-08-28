@@ -2,7 +2,7 @@
 	--f-blue-color: #aebecc;
 	--s-blue-color: #a3b7c6;
 	--dark-blue-color: #647888;
-	--main-color: #b9cbd9;
+	--main-color: #c1cdd7;
 	--txt-color: #575e71;
 	--int-txt-color: #13499d;
 
@@ -62,7 +62,7 @@ header > div:first-child {
 	flex-wrap: wrap;
 }
 
-header > div:first-child > a:last-child {
+header > div > a {
 	padding: 0 5px;
 	align-self: center;
 	margin-bottom: 1px;

@@ -24,7 +24,8 @@
 		<header>
 			<div>
 				<a href="../"><h1>BOToD</h1></a>
-				<a id="doc" href="/doc"></a>
+				<a id="doc" href="/BOToD/doc"></a>
+				<a id="doc" target="_blank" href="https://codesandbox.io/p/sandbox/quirky-chatterjee-n2xvfc">Code Sandbox</a>
 			</div>
 
 			<div>
@@ -53,9 +54,9 @@
 					<a href="#trackedobject" id="trackedobject2">Создание отслеживаемого объекта</a>
 
 				<b><a href="#bindings" id="bindings2">Связывания:</a></b>
-					<a href="#bind" id="bind2">bind</a><br>
-					<a href="#xrbind" id="xrbind2">xrBind</a><br>
-					<a href="#repeat" id="repeat2">repeat</a><br>
+					<a href="#bind" id="bind2">bind</a>
+					<a href="#xrbind" id="xrbind2">xrBind</a>
+					<a href="#repeat" id="repeat2">repeat</a>
 
 				<b><a href="#notes" id="notes2">Важные заметки</a></b>
 				</b>
@@ -209,12 +210,13 @@ myApp.repeat('.i2', x => y.k1.l1, (el, k) => el.value = appData.key[k], (el, k) 
 
 				<span id="usage-options">Есть варианты использовать данный метод для создания элементов без привязок и реактивности:</span>
 				<ul>
-					<li><span id="l-8-1">Для того чтобы отсутствовала привязка между созданными DOM объектами и полем итерируемого JS объекта для этого нужно 4-м аргументом передать</span> <b id="tblue">false</b> </li>
+					<li><span id="l-8-1">Для того чтобы отсутствовала привязка между созданными DOM объектами и полем итерируемого JS объекта для этого нужно 4-м аргументом передать</span> <b class="tblue">false</b> </li>
 					<li><span id="l-8-2-1">Для того чтобы отсутствовала привязка по итерируемому JS объекту (количество полей объекта меняется соответственно меняется количество создаваемых DOM элементов) для этого нужно 4-м аргументом передать</span> <b class="tblue">null</b> <span  id="l-8-2-2">или использовать неотслеживаемый JS объект в 1-м аргументе (см. Важные заметки).</span> <span id="l-8-2-3" class="info">Стоит учесть, что данный функционал также ведёт к отсутствию реактивности в пункте выше</span></li>
 				</ul>
 
 			<hr>
 			<h2 id="notes">Важные заметки</h2>
+			<p class="warn" id="warnnotes">Не используйте аргументы в методах и функциях всверх тех, что указаны в данном руководстве!</p>
 			<p id="note1">В методах <b class="tblue">xrBind</b> и <b class="tblue">repeat</b> с 4 аргументами: в аргументе-функции в которой указываем привязку DOM элемента к JS данным (3-й аргумент) нужно в коде читать поле JS объекта, чтобы сработал перехват Proxy и связал нужное поле JS объекта. Этого можно не делать, тогда будет отсутствовать привязка JS данных с DOM объектом.</p>
 			<p id="note2">Можно использовать все методы для заполнения данными DOM элементов без каких либо привязок и реактивности, достаточно использовать в качестве источника данных неотслеживаемый JS объект (не использовать <b class="tblue">App.buildData</b>)</p>
 			</section>
