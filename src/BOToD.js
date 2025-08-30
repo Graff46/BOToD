@@ -57,7 +57,7 @@ self.App = (() => {
 			}
 
 			if (!currentObjProp)
-				return repeatStore.set(rootObj, new Set().add(el));
+				return rootObj && repeatStore.set(rootObj, new Set().add(el));
 
 			skipProxyGetFlg = true;
 			parents.get( insertHandler(currentObjProp.obj[currentObjProp.prop]) )?.forEach(insertHandler);
