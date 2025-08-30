@@ -23,6 +23,7 @@ self.App = (() => {
 		var obj2prox		= new WeakMap();
 
 		var skipProxyGetFlg = false;
+		var tmp = null;
 
 		var addBind = (handler, resHandler, el) => {
 			let story = Object.create(null);
@@ -31,13 +32,11 @@ self.App = (() => {
 
 			el2handlerBind.set(el, story);
 
-			if (story = parents.get(currentObjProp.obj)) {
+			if (story = parents.get(currentObjProp.obj))
 				story.forEach(obj => {
-					let saved;
-					(saved = bindReset.get(obj)) || (bindReset.set(obj, saved = new Set()));
-					saved.add(el);
+					(tmp = bindReset.get(obj)) || bindReset.set(obj, tmp = new Set());
+					tmp.add(el);
 				});
-			}
 
 			(story = bindUpd.get(currentObjProp.obj)) || (bindUpd.set(currentObjProp.obj, story = Object.create(null)));
 			story[currentObjProp.prop] = (story[currentObjProp.prop] || new Set()).add(el);
@@ -49,22 +48,21 @@ self.App = (() => {
 			el2handlerRept.set(el, handler);
 			El2group.set(el, group);
 
-			var story;
 			const insertHandler = obj => {
-				(story = repeatStore.get(obj)) || (repeatStore.set(obj, story = new Set()));
-				story.add(el);
-				return obj
+				((tmp = repeatStore.get(obj)) || repeatStore.set(obj, tmp = new Set()));
+				tmp.add(el);
+				return obj;
 			}
 
 			if (!currentObjProp)
 				return rootObj && repeatStore.set(rootObj, new Set().add(el));
 
-			skipProxyGetFlg = true;
-			parents.get( insertHandler(currentObjProp.obj[currentObjProp.prop]) )?.forEach(insertHandler);
-			skipProxyGetFlg = false;
+			parents.get( insertHandler(currentObjProp.val) ).forEach(insertHandler);
 
 			currentObjProp = null;
 		}
+
+		var updRepeat = (el, group) => El2group.set(el, group);
 
 		var _unbind = (el, onlyBind) => {
 			const elm = getEl(el);
@@ -79,9 +77,13 @@ self.App = (() => {
 
 			const group = El2group.get(elm);
 			if (group) {
-				Object.values(group).forEach(el => el.remove());
+				var fragment = document.createDocumentFragment();
+				Object.values(group).forEach(el => fragment.append(el));
 				elm.hidden = false;
 			};
+
+			El2group.delete(elm);
+			el2eventHandler.delete(elm);
 		}
 
 		var needStoredGetterFlg = false;
@@ -93,6 +95,12 @@ self.App = (() => {
 					if (prop === IS_PROXY) return true;
 
 					if (!skipProxyGetFlg) {
+						if (needStoredGetterFlg) {
+							currentObjProp 		= Object.create(null);
+							currentObjProp.obj 	= receiver;
+							currentObjProp.prop	= prop;
+						}
+
 						if (target[prop] instanceof Object) {
 							if (!(target[prop][IS_PROXY])) {
 								skipProxySetFlg = true;
@@ -100,18 +108,12 @@ self.App = (() => {
 								skipProxySetFlg = false;
 
 								parents.set(newVal, (new Set( parents.get(receiver) )).add(receiver));
-							} 
+								if (prnt) parents.set(receiver, (new Set(parents.get(prnt) )).add(prnt));
+							}
 
-							if (prnt && !parents.has(receiver))
-								parents.set(receiver, (new Set(parents.get(prnt) )).add(prnt));
+							(currentObjProp) && (currentObjProp.val = target[prop]);
 						} else if (!(obj2prox.has(target)))
 							obj2prox.set(target, receiver);
-
-						if (needStoredGetterFlg) {
-							currentObjProp 		= Object.create(null);
-							currentObjProp.obj 	= receiver;
-							currentObjProp.prop	= prop;
-						}
 					}
 
 					return Reflect.get(target, prop, receiver);
@@ -122,13 +124,11 @@ self.App = (() => {
 						val = buildData(val, receiver);
 						parents.set(val, (new Set(parents.get(receiver) )).add(receiver));
 					}
-
 					const result = Reflect.set(target, prop, val, receiver);
 
 					if (skipProxySetFlg) return result;
 
 					let storeProps = bindReset.get(receiver);
-					var tmp = null;
 
 					if (storeProps) storeProps.forEach(el => (tmp = el2handlerBind.get(el)) && tmp.res());
 
@@ -138,7 +138,7 @@ self.App = (() => {
 					if (repeatStore.has(receiver)) {
 						storeProps = new Set(repeatStore.get(receiver));
 						repeatStore.delete(receiver);
-						storeProps.forEach(el => (tmp = el2handlerRept.get(el)) && tmp());
+						storeProps.forEach(el => (tmp = el2handlerRept.get(el)) && tmp(El2group.get(el)));
 					}
 
 					return result;
@@ -146,10 +146,11 @@ self.App = (() => {
 
 				deleteProperty: (target, prop) => {
 					var obj = null;
-					var store = target[prop];
+					var store;
+					var removed = target[prop];
 
-					if (store instanceof Object) {
-						if ((store[IS_PROXY]) && (obj = parents.get(store).keys().toArray())) 
+					if (removed instanceof Object) {
+						if ((removed[IS_PROXY]) && (obj = parents.get(removed).keys().toArray())) 
 							obj = obj[obj.length - 1];
 					} else
 						obj = obj2prox.get(target);
@@ -159,6 +160,10 @@ self.App = (() => {
 					if (store = bindReset.get(obj)) store.forEach(el => _unbind(el, true));
 					
 					if ((store = bindUpd.get(obj)) && (store = store[prop])) store.forEach(el => _unbind(el, true));
+
+					repeatStore.delete(removed);
+					bindReset.delete(removed);
+					bindUpd.delete(removed);
 					
 					return Reflect.deleteProperty(target, prop);
 				},
@@ -196,7 +201,7 @@ self.App = (() => {
 				}
 			},
 
-			repeat: (el, iterHandle, bindHandle, xrBindCallbackOrFlag = true, updGroup) => {
+			repeat: (el, iterHandle, bindHandle, xrBindCallbackOrFlag = true, updGroup = Object.create(null)) => {
 				var elm = getEl(el);
 
 				needStoredGetterFlg = true;
@@ -205,23 +210,17 @@ self.App = (() => {
 
 				var group = Object.create(null);
 
-				if ((currentObjProp || 1) && (xrBindCallbackOrFlag != null))
-					addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallbackOrFlag, group), elm, group);
-
-				if (updGroup) {
-					for (const k in updGroup) {
-						if (iter[k])
-							group[k] = updGroup[k];
-						else
-							updGroup[k].remove();
-					}
+				if ((currentObjProp) && (xrBindCallbackOrFlag != null)) {
+					if (repeatStore.has(currentObjProp.obj))
+						updRepeat(elm, group);
+					else
+						addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallbackOrFlag), elm, group);
 				}
-				
+
+				var fragment = document.createDocumentFragment();
 				var newEl = null
-				var fragment = new DocumentFragment();
-				
 				for (const key in iter) {
-					if ((!updGroup) || (!(key in updGroup))) {
+					if (!(key in updGroup)) {
 						newEl = elm.cloneNode(true);
 						newEl.hidden = false;
 						newEl.setAttribute('__key', key);
@@ -236,11 +235,18 @@ self.App = (() => {
 							bindHandle(newEl, key);
 
 						fragment.append(newEl);
-					}
+					} else
+						group[key] = updGroup[key];
+
+					delete updGroup[key];
 				}
 
-				elm.hidden = true;
-				elm.after(fragment);
+				if (fragment.firstChild) {
+					elm.hidden = true;
+					elm.after(fragment);
+				}
+
+				for (k in updGroup) fragment.append(updGroup[k]);
 			},
 
 			unbind: _unbind,
