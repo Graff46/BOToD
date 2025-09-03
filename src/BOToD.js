@@ -24,12 +24,14 @@ self.App = (() => {
 
 		var skipProxyGetFlg = false;
 		var tmp = null;
+		var maxCode = 1;
 
 		var _eachBit = (code, collector, el) => {
 			var insert = bcode => (collector[bcode] || (collector[bcode] = new Set())).add(el);
 			insert(code);
 
 			var nullCnt = 0;
+			if (code < 1) return console.error(code);
 			while(code !== 1) {
 				code >>= 1;
 				if (code % 2) {
@@ -53,13 +55,12 @@ self.App = (() => {
 
 			var code = currentObjProp.obj[MASK];
 
-
 			(tmp = bindUpd[code]) || (tmp = bindUpd[code] = Object.create(null));
 			(tmp[currentObjProp.prop] = (tmp[currentObjProp.prop] || new Set())).add(el);
 
 			currentObjProp = null;
 
-			_eachBit(code, bindReset, el);
+			return _eachBit(code, bindReset, el);
 		}
 
 		var addRepeat = (handler, el, group) => {
@@ -78,6 +79,8 @@ self.App = (() => {
 		var updRepeat = (el, group) => El2group.set(el, group);
 
 		var _unbind = (el, onlyBind) => {
+			if (el[IS_PROXY]) return _unbindObj(el);
+
 			const elm = getEl(el);
 
 			el2handlerBind.delete(elm);
@@ -95,35 +98,54 @@ self.App = (() => {
 				elm.hidden = false;
 			};
 
-
 			El2group.delete(elm);
+			(tmp = el2eventHandler.get(elm)) && (elm.removeEventListener(EVENT_TYPE, tmp));
 			el2eventHandler.delete(elm);
+		}
+
+		var _unbindObj = (obj) => {
+			for (var code = obj[MASK]; code <= maxCode; code++) {
+				[bindReset, bindUpd, repeatStore].forEach(acc => {
+					if (tmp = acc[code] && Object.values(acc[code])) {
+						tmp.forEach(el => _unbind(el, true)); 
+						delete bindReset[code];
+						delete bindUpd[code];
+						delete repeatStore[code];
+					}
+				});
+			}
+
+			return obj;
 		}
 
 		var needStoredGetterFlg = false;
 		var skipProxySetFlg = false;
 
 		var buildData = (obj, code = 1, oldMap = Object.create(null)) => {
-			return new Proxy(obj, {
-				mask: code,
-				props: Object.create(null),
+			var mask = code;
+			var props = Object.create(null);
 
+			return new Proxy(obj, {
 				get: function(target, prop, receiver) {
 					if (prop === IS_PROXY) return true;
-					if (prop === MASK) return this.mask;
-					if (prop === MAP) return Object.assign(Object.create(null),this.props);
+					if (prop === MASK) return mask;
+					if (prop === MAP) return props;
 
 					if (!skipProxyGetFlg) {
-						if (!this.props[prop]) {
+						if (!props[prop]) {
 							if (oldMap[prop])
-								this.props[prop] = this.mask = oldMap[prop];
-							else
-								this.props[prop] = this.mask <<= this.props.size - 1;
+								props[prop] = mask = oldMap[prop];
+							else {
+								mask <<= Object.keys(props).length;
+								props[prop] = mask;
+							}
+								
+							maxCode = Math.max(maxCode, mask);
 						}
-Object.assign
+
 						if ((target[prop] instanceof Object) && !(target[prop][IS_PROXY])) {
 							skipProxySetFlg = true;
-							receiver[prop] = buildData(target[prop], ((this.mask << 1) | 1), this.props);
+							receiver[prop] = buildData(target[prop], ((mask << 1) | 1), props);
 							skipProxySetFlg = false;
 						} else if (!obj2prox.has(target))
 							obj2prox.set(target, receiver);
@@ -143,57 +165,20 @@ Object.assign
 					var storeRepeats = null;
 
 					if ((!skipProxySetFlg) && (val instanceof Object) && (!val[IS_PROXY]))
-						val = buildData(val, ((this.mask << 1) | 1), target[prop][MAP]);
+						val = buildData(val, ((mask << 1) | 1), target[prop][MAP]);
 
 					const result = Reflect.set(target, prop, val, receiver);
 
-					const code = receiver[MASK];
-
 					if (skipProxySetFlg) return result;
 
-					if (storeRepeats = repeatStore[code]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el)) && tmp(El2group.get(el)));
+					if (storeRepeats = repeatStore[mask]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el)) && tmp(El2group.get(el)));
 
-					if (storebinds = bindReset[code]) storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && tmp.res());
+					if (storebinds = bindReset[mask]) storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && tmp.res());
 
-					if ((storebinds = bindUpd[receiver[MASK]]) && (storebinds = storebinds[prop]))
+					if ((storebinds = bindUpd[mask]) && (storebinds = storebinds[prop]))
 						storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && tmp.upd());
 
 					return result;
-				},
-
-				deleteProperty: (target, prop) => {
-					var store = target[prop];
-					var code;
-
-					if ((store instanceof Object) && (code = store[MASK])) {
-						var nullCnt = 0;
-						while(code !== 1) {
-							code >>= 1;
-							if (code % 2) {
-								if ((code === 1) && (nullCnt)) {
-									code = (code << nullCnt);
-									break;
-								} else
-									break;
-
-								nullCnt = 0;
-							} else
-								nullCnt++;
-						}
-					} else
-						code = obj2prox.get(target)[MASK];
-
-					if (store = repeatStore[code]) store.forEach(el => _unbind(el));
-
-					if (store = bindReset[code]) store.forEach(el => _unbind(el, true));
-
-					if ((store = bindUpd[code]) && (store = store[prop])) store.forEach(el => _unbind(el, true));
-
-					delete repeatStore[code];
-					delete bindReset[code];
-					delete bindUpd[code];
-
-					return Reflect.deleteProperty(target, prop);
 				},
 			});
 		}
@@ -271,7 +256,7 @@ Object.assign
 					delete updGroup[key];
 				}
 
-				if (fragment.firstChild) {
+				if (fragment.childElementCount) {
 					elm.hidden = true;
 					elm.after(fragment);
 				}
