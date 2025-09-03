@@ -24,14 +24,15 @@ self.App = (() => {
 		var tmp;
 
 		var addBind = (handler, resHandler, el) => {
-			(rmp = el2bindsUpd.get(el)) || (el2bindsUpd.set(el, tmp = Object.create(null)));
+			(tmp = el2bindsUpd.get(el)) || (el2bindsUpd.set(el, tmp = Object.create(null)));
 			tmp[currentObjProp.prop] = handler;
 
-			if (story = currentObjProp.obj[_PARENTS])
-				story.forEach(obj => {
+			if (tmp = currentObjProp.obj[_PARENTS]) {
+				tmp.forEach(obj => {
 					obj[_SET_EL](el);
 					el2binds.set(el, resHandler);
 				});
+			}
 
 			currentObjProp.obj[_SET_EL](el);
 
@@ -75,6 +76,7 @@ self.App = (() => {
 			};
 
 			El2group.delete(elm);
+			(tmp = el2eventHandler.get(elm)) && (elm.removeEventListener(EVENT_TYPE, tmp));
 			el2eventHandler.delete(elm);
 		}
 
@@ -131,21 +133,12 @@ self.App = (() => {
 					return result;
 				},
 
-				deleteProperty: (target, prop) => {
-					/*var obj = null;
-					var removed = target[prop];
+				deleteProperty: (target, prop, receiver) => {
+					if (target[prop][_IS_PROXY])
+						target[prop][_GET_EL].forEach(e => _unbind(e, true));
 
-					if (removed instanceof Object) {
-						if ((removed[_IS_PROXY]) && (obj = removed[_PARENTS])) 
-							for (obj of obj);
-					} else
-						obj = obj2prox.get(target);
-
-					//(obj = obj[prop][_EL]).forEach(el => _unbind(el, false, prop));
-					//obj.clear();*/
-
-					return Reflect.deleteProperty(target, prop);
-				},
+					return Reflect.deleteProperty(target, prop, receiver);
+				}
 			});
 		}
 

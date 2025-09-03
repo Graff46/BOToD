@@ -29,4 +29,5 @@ var tt;
 setTimeout(() => { y.k1 = {l1:{ m1: 55 }}; }, 2000);
 setTimeout(() => { y.k1.l1.m111 = 3; /*App.bind('.i3', x => yy.l2.m2)*/;}, 3000);
 setTimeout(() => {y.k1.l1 = {m1: 4, m11: 5, m1111: 6 };}, 4000);
-setTimeout(() => delete y.k1.l1, 5000);
+setTimeout(() => delete y.k1, 5000);
+setTimeout(() => y.k1 = {l1: { m1: 66}}, 6000);
