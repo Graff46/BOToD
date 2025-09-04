@@ -27,6 +27,7 @@ myApp.repeat('.i2', x => y.k1.l1, (el, k) => el.value = y.k1.l1[k], (el, k) => y
 //myApp.repeat('.i2', x => appData, (k) => appData[k] ? k: 0);
 var tt;
 setTimeout(() => { y.k1 = {l1:{ m1: 55 }}; }, 2000);
-setTimeout(() => { y.k1.l1.m111 = 3; /*App.bind('.i3', x => yy.l2.m2)*/;}, 3000);
+setTimeout(() => { self.tt= 1; y.k1.l1.m111 = 3; /*App.bind('.i3', x => yy.l2.m2)*/;}, 3000);
 setTimeout(() => {y.k1.l1 = {m1: 4, m11: 5, m1111: 6 };}, 4000);
-setTimeout(() => delete y.k1.l1, 5000);
+setTimeout(() => delete y.k1, 5000);
+setTimeout(() => y.k1 = {l1: { m1: 66, m11: 77}}, 6000);
