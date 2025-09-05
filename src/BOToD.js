@@ -56,6 +56,21 @@ self.App = (() => {
 			currentObjProp = null;
 		}
 
+		var resetEl = elm => {
+			elm.value = null;
+
+			const group = El2group.get(elm);
+			if (group) {
+				const fragment = document.createDocumentFragment();
+				Object.values(group).forEach(el => fragment.append(el));
+				elm.hidden = false;
+			};
+
+			El2group.delete(elm);
+			(tmp = el2eventHandler.get(elm)) && (elm.removeEventListener(EVENT_TYPE, tmp));
+			el2eventHandler.delete(elm);
+		}
+
 		var _unbind = (el, onlyBind) => {
 			const elm = getEl(el);
 	
@@ -68,16 +83,7 @@ self.App = (() => {
 
 			el2repeats.delete(elm);
 
-			const group = El2group.get(elm);
-			if (group) {
-				const fragment = document.createDocumentFragment();
-				Object.values(group).forEach(el => fragment.append(el));
-				elm.hidden = false;
-			};
-
-			El2group.delete(elm);
-			(tmp = el2eventHandler.get(elm)) && (elm.removeEventListener(EVENT_TYPE, tmp));
-			el2eventHandler.delete(elm);
+			return resetEl(elm)
 		}
 
 		var needStoredGetterFlg = false;
@@ -134,8 +140,8 @@ self.App = (() => {
 				},
 
 				deleteProperty: (target, prop, receiver) => {
-					if (target[prop][_IS_PROXY])
-						target[prop][_GET_EL].forEach(e => _unbind(e, true));
+					if (target[prop] && target[prop][_IS_PROXY])
+						target[prop][_GET_EL].forEach(e => resetEl(e));
 
 					return Reflect.deleteProperty(target, prop, receiver);
 				}
