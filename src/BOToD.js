@@ -222,7 +222,7 @@ self.App = (() => {
 				}
 			},
 
-			repeat: (el, iterHandle, bindHandle, xrBindCallbackOrFlag = true, updGroup = Object.create(null)) => {
+			repeat: (el, iterHandle, bindHandle, xrBindCallbackOrFlag = true) => {
 				var elm = getEl(el);
 
 				needStoredGetterFlg = true;
@@ -231,6 +231,7 @@ self.App = (() => {
 				needStoredGetterFlg = false;
 
 				var group = Object.create(null);
+				var updGroup = El2group.get(elm) || Object.create(null);
 
 				if ((currentObjProp) && (xrBindCallbackOrFlag != null)) {
 					if (repeatStore[currentObjProp.obj[_MASK]])
@@ -269,7 +270,15 @@ self.App = (() => {
 					elm.after(fragment);
 				}
 
-				for (k in updGroup) fragment.append(updGroup[k]);
+				for (k in updGroup) {
+					fragment.append(tmp = updGroup[k]);
+					
+					tmp.removeEventListener(EVENT_TYPE, el2eventHandler.get(tmp));
+					el2eventHandler.delete(tmp);
+					el2handlerBind.delete(tmp);
+					el2handlerRept.delete(tmp);
+					El2group.delete(tmp);
+				};
 			},
 
 			unbind: _unbind,
