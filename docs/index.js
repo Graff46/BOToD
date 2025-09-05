@@ -5,7 +5,7 @@ const resize = () => bkg.style.fontSize = (1 / (window.devicePixelRatio || 1)) *
 if (bkg) {
 	fetch('https://cdn.jsdelivr.net/gh/Graff46/BOToD@latest/src/BOToD.js').then(x => x.text())
 	.then(x => {
-		bkg.textContent = x.repeat(Math.ceil( window.innerWidth * window.innerHeight / 2073600 ) * 3);
+		bkg.textContent = x.repeat(Math.ceil( window.innerWidth * window.innerHeight / 2073600 ) * 4);
 		hljs.highlightElement(bkg);
 		resize();
 	}); 

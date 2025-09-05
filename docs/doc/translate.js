@@ -1,5 +1,4 @@
 const Translate = {
-	doc: ['Документация', 'Documentation'],
 	"theme-label": ['Тема просмотровщика кода', 'Code viewer theme'],
 	"library-description": [
 		'Библиотека для двустороннего реактивного связывания JavaScript данных с DOM элементами. Для отслеживания Object он лениво-рекурсивно оборачивается в Proxy. Это значит, что вложенные Object\'ы и массивы будут заменены на свои Proxy только при необходимости. Вся реализация происходит в коде, нет никаких биндингов в HTML.',
@@ -72,8 +71,8 @@ const Translate = {
 		'In xrBind and repeat methods with 4 arguments: in the function argument where we specify the binding of the DOM element to JS data (3rd argument), you need to read the JS object field in the code so that the Proxy interception works and links the required JS object field. This can be omitted, then there will be no binding of JS data with the DOM object.'
 	],
 	"note2": [
-		'Можно использовать все методы для заполнения данными DOM элементов без каких либо привязок и реактивности, достаточно использовать в качестве источника данных неотслеживаемый JS объект (не использовать App.buildData)',
-		'You can use all methods to fill DOM elements with data without any bindings and reactivity, just use a non-observed JS object as the data source (do not use App.buildData)'
+		'Можно использовать все методы для заполнения данными DOM элементов без каких либо привязок и реактивности, достаточно использовать в качестве источника данных неотслеживаемый JS объект (не использовать',
+		'You can use all methods to fill DOM elements with data without any bindings and reactivity, just use a non-observed JS object as the data source (do not use'
 	],
 	"selector-list": ['Селектор или сам DOM элемент', 'The selector or the DOM element itself'],
 	"func-li1": ['Функция возвращающая значение из JS объекта к которому привязываемся', 'A function that returns a value from the JS object that we are linking to'],
@@ -108,11 +107,20 @@ const Translate = {
 	bindings: ['Связывания', 'Bindings'],
 	notes: ['Важные заметки', 'Critical notes'],
 	warnnotes: ['Не используйте аргументы в методах и функциях всверх тех, что указаны в данном руководстве!', 'Avoid using any arguments in methods and functions other than those explicitly defined in this documentation!'],
+	unbinds: ['Развязывания', 'Unbinding'],
+	unb1: ['Удаление и перезапись полей объекта не приводит к удалению связываний с этими полями!', 'Deleting and overwriting the fields of an object does not delete the links to these fields!'],
+	unb2: ['Данный метод используется для снятия связываний с JS объекта или DOM элемента.', 'This method is used to remove bindings from a JS object or DOM element.'],
+	unb3: ['JS объект или DOM элемент c которого убираем прявязки', 'A JS object or DOM element from which we remove the links'],
+	unb4: ['Булевый флаг. При', 'Boolean flag. When'],
+	unb5: ['удаляются привязки кроме привязок', 'bindings are deleted except for bindings'],
+	note3: ['Если удалить дочерний JS объект оператором', 'If you delete a child JS object with the operator',],
+	note4: [', то отвязки биндингов не будет.', 'then there will be no untethering of bindings.'],
+	note5: ['В вышепоказанном коде через 2 секунды значение DOM элемента будет сброшено, а еще через 2 секунды значение DOM элемента будет 55.', 'In the above code, after 2 seconds, the value of the DOM element will be reset, and after another 2 seconds, the value of the DOM element will be 55.'],
 };
 
 Translate['l-7-1'] = Translate['l-6-1'] = Translate['l-5-1'] = Translate['l-4-1'] = Translate['selector-list-2'] = Translate['selector-list'];
 Translate['l-4-2'] = Translate['l-5-2'] = Translate['func-li1'];
-Translate.arguments5 = Translate.arguments4 = Translate.arguments3 = Translate.arguments2 = Translate.arguments = Translate['arguments-title2'] = Translate['arguments-title3'] = Translate['arguments-title4'] = Translate['arguments-title'];
+Translate.arguments6 = Translate.arguments5 = Translate.arguments4 = Translate.arguments3 = Translate.arguments2 = Translate.arguments = Translate['arguments-title2'] = Translate['arguments-title3'] = Translate['arguments-title4'] = Translate['arguments-title'];
 Translate['l-5-4-1'] = Translate['l-5-3-1'];
 Translate['l-7-3-4'] = Translate['l-6-3-3'];
 Translate['l-7-2'] = Translate['l-6-2'];
@@ -128,3 +136,4 @@ Translate.trackedobject2= Translate.trackedobject;
 Translate.createapp2	= Translate.createapp;	 	
 Translate.bindings2		= Translate.bindings;
 Translate.notes2		= Translate.notes;
+Translate.unbinds2		= Translate.unbinds;
