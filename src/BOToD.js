@@ -234,7 +234,7 @@ self.App = (() => {
 				var updGroup = El2group.get(elm) || Object.create(null);
 
 				if ((currentObjProp) && (xrBindCallbackOrFlag != null)) {
-					if (repeatStore[currentObjProp.obj[_MASK]])
+					if ((tmp = repeatStore[currentObjProp.obj[_MASK]]) && tmp.has(elm))
 						updRepeat(elm, group);
 					else
 						addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallbackOrFlag), elm, group);
