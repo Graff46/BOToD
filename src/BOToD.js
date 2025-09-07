@@ -74,8 +74,8 @@ self.App = (() => {
 		var _unbind = (el, onlyBind) => {
 			const elm = getEl(el);
 	
-			el2binds.delete(el);
-			el2bindsUpd.delete(el);
+			el2binds.delete(elm);
+			el2bindsUpd.delete(elm);
 
 			elm.value = null;
 
@@ -83,7 +83,7 @@ self.App = (() => {
 
 			el2repeats.delete(elm);
 
-			return resetEl(elm)
+			return resetEl(elm);
 		}
 
 		var needStoredGetterFlg = false;
