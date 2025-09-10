@@ -8,7 +8,7 @@ self.App = (() => {
 		var EVENT_TYPE = settingBits & 0b1 ? 'input' : 'change';
 		var BINDING_PROPERTY = settingBits & 0b10 ? 'textContent' : 'value';
 
-		var currentObjProp	= null;
+		var currentObjProp = null;
 
 		var el2handlerBind	= new WeakMap();
 		var el2handlerRept	= new WeakMap();
@@ -25,9 +25,9 @@ self.App = (() => {
 		var maxCode = 1;
 		var matrix = Object.create(null);
 
-		var _eachBit = (code, collector, el) => {
+		var _eachBit = (code, collector, el, needAddSelf) => {
 			var insert = bcode => (collector[bcode] || (collector[bcode] = new Set())).add(el);
-			insert(code);
+			needAddSelf && insert(code);
 
 			var nullCnt = 0;
 			while(code !== 1) {
@@ -61,7 +61,7 @@ self.App = (() => {
 			return _eachBit(code, bindReset, el);
 		}
 
-		var addRepeat = (handler, el, group, storyCall) => {
+		var addRepeat = (handler, el, group) => {
 			const msk = currentObjProp.childMask;
 
 			el2handlerRept.set(el, handler);
@@ -69,7 +69,7 @@ self.App = (() => {
 
 			currentObjProp = null;
 
-			return _eachBit(msk, repeatStore, el);
+			return _eachBit(msk, repeatStore, el, true);
 		}
 
 		var resetEl = elm => {
@@ -145,11 +145,11 @@ self.App = (() => {
 		var buildData = (obj, code = 1, deepLvl = 0) => {
 			var matRow = matrix[deepLvl] = Object.create(null);
 			return new Proxy(obj, {
-				mask: code,
+				//mask: code,
 				nextCode: code,
 				get: function(target, prop, receiver) {
 					if (prop === _IS_PROXY) return true;
-					if (prop === _MASK) return this.mask;
+					if (prop === _MASK) return code;
 					if (prop === _DEEP) return deepLvl;
 
 					let childCode = ((this.nextCode << 1) | 1);
@@ -165,7 +165,7 @@ self.App = (() => {
 
 					if (needStoredGetterFlg) {
 						currentObjProp = Object.create(null);
-						currentObjProp.mask = this.mask;
+						currentObjProp.mask = code;
 						currentObjProp.prop	= prop;
 						currentObjProp.childMask = childCode;
 					}
@@ -179,7 +179,6 @@ self.App = (() => {
 
 					if ((!skipProxySetFlg) && (val instanceof Object) && (!val[_IS_PROXY])) {
 						this.nextCode = (matRow[prop]) || (matRow[prop] = this.nextCode << 1);
-
 						val = buildData(val, ((this.nextCode << 1) | 1), deepLvl + 1);
 					}
 
@@ -187,20 +186,19 @@ self.App = (() => {
 
 					if (skipProxySetFlg) return result;
 
-					if (storeRepeats = repeatStore[this.mask]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el)) && tmp(true));
+					if (storeRepeats = repeatStore[code]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el)) && tmp(true));
 
-					if (storebinds = bindReset[this.mask]) storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && tmp.res(true));
+					if (storebinds = bindReset[code]) storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && tmp.res(true));
 
-					if ((storebinds = bindUpd[this.mask]) && (storebinds = storebinds[prop]))
+					if ((storebinds = bindUpd[code]) && (storebinds = storebinds[prop]))
 						storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && tmp.upd(true));
 
 					return result;
 				},
 
 				deleteProperty: function(target, prop) {
-					if ((target[prop] instanceof Object) && target[prop][_IS_PROXY]) {
-						_unbindObj(target, prop, resetEl);
-					}
+					if ((target[prop] instanceof Object) && target[prop][_IS_PROXY]) 
+						return _unbindObj(target, prop, resetEl);
 				},
 			});
 		}
@@ -224,7 +222,7 @@ self.App = (() => {
 
 				var cObjProp = __needCurrObj ? Object.assign(Object.create(null), currentObjProp) : null;
 
-				if ((currentObjProp) && !((storyCall) && (tmp = bindUpd[code]) && (tmp = tmp[currentObjProp.prop]) && tmp.has(el)))
+				if ( (currentObjProp) && !(storyCall && bindUpd[currentObjProp.mask]) )
 					addBind(handler.bind(null, elm, rptKey), extInterface.xrBind.bind(null, elm, handler, callback, __needCurrObj, rptKey), elm);
 
 				elm.removeEventListener(EVENT_TYPE, el2eventHandler.get(elm));
@@ -247,10 +245,10 @@ self.App = (() => {
 				var updGroup = El2group.get(elm) || Object.create(null);
 
 				if ((currentObjProp) && (xrBindCallbackOrFlag != null)) {
-					if ((tmp = repeatStore[currentObjProp.mask]) && tmp.has(elm))
-						El2group.set(elm, group)
-					else if ((storyCall) && (tmp = repeatStore[msk]) && tmp.has(el))
+					if (!(storyCall && repeatStore[iter[_MASK]]))	
 						addRepeat(extInterface.repeat.bind(null, elm, iterHandle, bindHandle, xrBindCallbackOrFlag), elm, group);
+					else 
+						El2group.set(elm, group);	
 				}
 
 				var newEl = null
