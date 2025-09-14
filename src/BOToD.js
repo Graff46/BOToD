@@ -3,6 +3,7 @@ self.App = (() => {
 	var _IS_PROXY = Symbol('isProxy');
 	var _MASK = Symbol('mask');
 	var _DEEP = Symbol('deep');
+	var _HIDDEN = Symbol('hidden');
 
 	return (settingBits = 0) => {
 		var EVENT_TYPE = settingBits & 0b1 ? 'input' : 'change';
@@ -73,7 +74,7 @@ self.App = (() => {
 		}
 
 		var resetEl = elm => {
-			elm.value = null;
+			elm[BINDING_PROPERTY] = null;
 
 			const group = El2group.get(elm);
 			if (group) {
@@ -94,7 +95,7 @@ self.App = (() => {
 
 			el2handlerBind.delete(elm);
 
-			elm.value = null;
+			elm[BINDING_PROPERTY] = null;
 
 			if (onlyBind) return;
 
@@ -111,14 +112,13 @@ self.App = (() => {
 			} else
 				obj = obj[prop];
 
-			(tmp = matrix[obj[_DEEP] - 1]) && (delete tmp[prop || currentObjProp.prop]);
+			if (tmp = matrix[obj[_DEEP] - 1]) delete tmp[prop || currentObjProp.prop];
 			currentObjProp = null;
 
-			var msk = obj[_MASK];
+			const msk = obj[_MASK];
 			var code = msk;
-			let pow2 = 1;
 
-			for (let i = 1; code <= maxCode; i++) {
+			for (let i = 1, pow2 = 1; code <= maxCode; i++) {
 				(i === pow2) ? (code = msk * i) && (pow2 *= 2) : code++;
 
 				delete matrix[code];
@@ -153,7 +153,7 @@ self.App = (() => {
 					if (prop === _DEEP) return deepLvl;
 
 					let childCode = ((this.nextCode << 1) | 1);
-					if ((target[prop] instanceof Object) && !(target[prop][_IS_PROXY])) {
+					if ((typeof(target[prop]) === 'object') && !(target[prop][_IS_PROXY])) {
 						skipProxySetFlg = true;
 						this.nextCode = (matRow[prop]) || (matRow[prop] = this.nextCode << 1);
 						receiver[prop] = buildData(target[prop], childCode = ((this.nextCode << 1) | 1), deepLvl + 1);
@@ -167,6 +167,7 @@ self.App = (() => {
 						currentObjProp = Object.create(null);
 						currentObjProp.mask = code;
 						currentObjProp.prop	= prop;
+						currentObjProp.obj	= receiver;
 						currentObjProp.childMask = childCode;
 					}
 
@@ -174,17 +175,22 @@ self.App = (() => {
 				},
 
 				set: function(target, prop, val, receiver) {
-					var storebinds = null;
-					var storeRepeats = null;
-
-					if ((!skipProxySetFlg) && (val instanceof Object) && (!val[_IS_PROXY])) {
-						this.nextCode = (matRow[prop]) || (matRow[prop] = this.nextCode << 1);
-						val = buildData(val, ((this.nextCode << 1) | 1), deepLvl + 1);
+					var skeepFlg = false;
+					if (!skipProxySetFlg) {
+						if ((target instanceof Array) && (!((prop === 'length') || isFinite(prop))))
+								return Reflect.set(target, prop, val, receiver);
+						else {
+							if ((typeof(val) === 'object') && (!val[_IS_PROXY])) {
+								this.nextCode = (matRow[prop]) || (matRow[prop] = this.nextCode << 1);
+								val = buildData(val, ((this.nextCode << 1) | 1), deepLvl + 1);
+							}
+						}
 					}
 
 					const result = Reflect.set(target, prop, val, receiver);
+					if (skipProxySetFlg || skeepFlg) return result;
 
-					if (skipProxySetFlg) return result;
+					var storebinds = null, storeRepeats = null;
 
 					if (storeRepeats = repeatStore[code]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el)) && tmp(true));
 
@@ -198,7 +204,9 @@ self.App = (() => {
 
 				deleteProperty: function(target, prop) {
 					if ((target[prop] instanceof Object) && target[prop][_IS_PROXY]) 
-						return _unbindObj(target, prop, resetEl);
+						_unbindObj(target, prop, resetEl);
+
+					return Reflect.deleteProperty(target, prop);
 				},
 			});
 		}
@@ -220,13 +228,16 @@ self.App = (() => {
 				handler(elm, rptKey);
 				needStoredGetterFlg = false;
 
-				var cObjProp = __needCurrObj ? Object.assign(Object.create(null), currentObjProp) : null;
+				var cObjProp = __needCurrObj ? Object.create(null) : null;
+				if (__needCurrObj) {
+					cObjProp.obj = currentObjProp.obj;
+					cObjProp.prop = currentObjProp.prop;
+				}
 
 				if ( (currentObjProp) && !(storyCall && bindUpd[currentObjProp.mask]) )
 					addBind(handler.bind(null, elm, rptKey), extInterface.xrBind.bind(null, elm, handler, callback, __needCurrObj, rptKey), elm);
 
 				elm.removeEventListener(EVENT_TYPE, el2eventHandler.get(elm));
-
 				if (callback) {
 					const eventHandler = event => callback(event.currentTarget, cObjProp || rptKey);
 					el2eventHandler.set(elm, eventHandler);
@@ -281,7 +292,7 @@ self.App = (() => {
 					elm.after(fragment);
 				}
 
-				for (k in updGroup) {
+				for (let k in updGroup) {
 					fragment.append(tmp = updGroup[k]);
 					
 					tmp.removeEventListener(EVENT_TYPE, el2eventHandler.get(tmp));
