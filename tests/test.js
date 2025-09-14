@@ -81,4 +81,5 @@ async function runTestObject() {
 	setTimeout(() => {yy.k1.l1 = {m1: 65, m11: 31, m111: 4};}, 6000);
 	setTimeout(() => delete yy.k1, 8000);
 	setTimeout(() => yy.k1 = {l1: {m1: 77, m11: 88}}, 10_000);
+	setTimeout(() => yy.k1.l1.m1 = 100, 12_000);
 }
