@@ -104,7 +104,7 @@ self.App = (() => {
 			return resetEl(elm);
 		}
 
-		var _unbindObj = (obj, prop, handler = _unbind) => {
+		var _unbindObj = (obj, prop, onlyReset) => {
 			if (obj instanceof Function) {
 				needStoredGetterFlg = true;
 				obj = obj();
@@ -112,27 +112,35 @@ self.App = (() => {
 			} else
 				obj = obj[prop];
 
-			if (tmp = matrix[obj[_DEEP] - 1]) delete tmp[prop || currentObjProp.prop];
+			var ldeep = obj[_DEEP];
+			if ((!onlyReset) && (tmp = matrix[ldeep - 1])) delete tmp[prop || currentObjProp.prop];
 			currentObjProp = null;
+
+			var handler = onlyReset ? resetEl : _unbind;
+			var row = null;
 
 			const msk = obj[_MASK];
 			var code = msk;
-
 			for (let i = 1, pow2 = 1; code <= maxCode; i++) {
 				(i === pow2) ? (code = msk * i) && (pow2 *= 2) : code++;
 
-				delete matrix[code];
+				if (!onlyReset) {
+					if (code % 2)
+						row = matrix[ldeep++];
+					else
+						for (let prp in row) if (row[prp] === code) delete row[prp];
+				}
 
 				[repeatStore, bindReset].forEach(acc => {
 					if ((acc[code]) && (tmp = acc[code])) {
 						tmp.forEach(el => handler(el));
-						delete acc[code];
+						if (!onlyReset) delete acc[code];
 					}
 				});
 
 				if ((tmp = bindUpd[code]) && (tmp = Object.values(tmp))) {
 					Object.values(tmp).forEach(itm => itm.forEach(el => handler(el)));
-					delete bindUpd[code];
+					if (!onlyReset) delete bindUpd[code];
 				}
 			}
 
@@ -145,7 +153,7 @@ self.App = (() => {
 		var buildData = (obj, code = 1, deepLvl = 0) => {
 			var matRow = matrix[deepLvl] = Object.create(null);
 			return new Proxy(obj, {
-				//mask: code,
+				mask: code,
 				nextCode: code,
 				get: function(target, prop, receiver) {
 					if (prop === _IS_PROXY) return true;
@@ -167,7 +175,7 @@ self.App = (() => {
 						currentObjProp = Object.create(null);
 						currentObjProp.mask = code;
 						currentObjProp.prop	= prop;
-						currentObjProp.obj	= receiver;
+						currentObjProp.obj = receiver;
 						currentObjProp.childMask = childCode;
 					}
 
@@ -177,14 +185,12 @@ self.App = (() => {
 				set: function(target, prop, val, receiver) {
 					var skeepFlg = false;
 					if (!skipProxySetFlg) {
-						if ((target instanceof Array) && (!((prop === 'length') || isFinite(prop))))
+						if (Array.isArray(target) && (!((prop === 'length') || isFinite(prop))))
 								return Reflect.set(target, prop, val, receiver);
-						else {
-							if ((typeof(val) === 'object') && (!val[_IS_PROXY])) {
+						else if ((typeof(val) === 'object') && (!val[_IS_PROXY])) {
 								this.nextCode = (matRow[prop]) || (matRow[prop] = this.nextCode << 1);
 								val = buildData(val, ((this.nextCode << 1) | 1), deepLvl + 1);
 							}
-						}
 					}
 
 					const result = Reflect.set(target, prop, val, receiver);
@@ -204,7 +210,7 @@ self.App = (() => {
 
 				deleteProperty: function(target, prop) {
 					if ((target[prop] instanceof Object) && target[prop][_IS_PROXY]) 
-						_unbindObj(target, prop, resetEl);
+						_unbindObj(target, prop, true);
 
 					return Reflect.deleteProperty(target, prop);
 				},
