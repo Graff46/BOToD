@@ -107,7 +107,7 @@ self.App = (() => {
 							currentObjProp.prop	= prop;
 						}
 
-						if (target[prop] instanceof Object) {
+						if (typeof(target[prop]) === 'object') {
 							if (!(target[prop][_IS_PROXY])) {
 								skipProxySetFlg = true;
 								receiver[prop] = buildData(target[prop], new Set(parents).add(receiver), elms);
@@ -123,8 +123,13 @@ self.App = (() => {
 				},
 
 				set: (target, prop, val, receiver) => {
-					if ((!skipProxySetFlg) && (val instanceof Object) && (!val[_IS_PROXY]))
-						val = buildData(val, new Set(parents).add(receiver), elms);
+
+					if (!skipProxySetFlg) {
+						if ((Array.isArray(target)) && (!((prop === 'length') || isFinite(prop))))
+							return Reflect.set(target, prop, val, receiver);
+						else if ((typeof(val) === 'object') && (!val[_IS_PROXY]))
+							val = buildData(val, new Set(parents).add(receiver), elms);
+					}
 
 					const result = Reflect.set(target, prop, val, receiver);
 
@@ -224,7 +229,7 @@ self.App = (() => {
 				}
 
 				let delel;
-				for (k in updGroup) {
+				for (let k in updGroup) {
 					delel = updGroup[k];
 
 					el2repeats.delete(delel);
