@@ -118,18 +118,24 @@ const appData = myApp.buildData(obj);</code></pre>
 				<h4 id="createapp">Создание экземпляра приложения</h4>
 				<span id="app-function-text">После того, как библиотека будет подключена в глобальной области видимости появится функция <b class="tblue">App</b>, которая возвращает экземпляр приложения.</span><br>
 				<i class="warn"><u id="warning-text">Следите за тем, чтобы не переназначить идентификатор <b class="tblue">App</b> в глобальной области видимости</u></i>
-				<pre><code class="javascript">const myApp = App()</code></pre>
-
-				<h4 id="trackedobject">Создание отслеживаемого объекта</h4>
+				<pre><code class="javascript">const myApp = App();
+const myApp = App(App.eventTypeInput | App.textContent);
+const myApp2 = App(App.eventTypeInput + App.textContent);</code></pre>
 				<span id="configuration-text">При создании экземпляра приложения можно задать настройки определяющие правила работы данного экземпляра приложения. Указание настроек осуществляется путём указания флагов в аргументах функции <b class="tblue">App</b> указанной выше. Идентификаторы флагов доступны как статические свойства объекта функции <b class="tblue">App</b>. На данный момент доступны следующие флаги:</span>
 				<ul>
 					<li><b class="tblue">eventTypeInput</b><span id="l-3-1-1"> — устанавливает тип обработчиков событий на связанных элементах в </span><a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/Element/input_event">input</a><span id="l-3-1-2">. Иначе будет установлено</span> <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/change_event">change</a></li>
 					<li><b class="tblue">textContentBinding</b><span id="l-3-2-1"> — устанавливает привязку к</span> <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent">textContent</a> <span id="l-3-2-2">DOM элемента</span><span id="l-3-2-3">. Иначе установлено в</span> <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/value">value</a></li>
 				</ul>
 				<i class="warn"><u id="flags-warning">Флаги являются битовыми флагами, их можно сочетать с помощью операции битового оператора "ИЛИ" или арифметического сложения</u></i>
-				<pre><code class="javascript">const myApp = App(App.eventTypeInput | App.textContent);
-const myApp2 = App(App.eventTypeInput + App.textContent);</code></pre>
-			
+
+				<h4 id="trackedobject">Создание отслеживаемого объекта</h4>
+
+				<span id="c-react">Для обеспечения реактивности библиотека использует Proxy. Поэтому, чтобы отслеживать изменения в объекте, необходимо его обернуть в Proxy. Для этого используется метод экземпляра приложения:</span> <b class="tblue">buildData</b>
+				<pre><code class="javascript">const data = {key: {k1: {l1: {m1: 1, m11: 2}}}};
+const myApp = App();
+
+const appData = myApp.buildData(data);</code></pre>
+
 				<hr>
 				<h3 id="bindings">Связывания</h3>
 				<h4 id="bind">bind</h4>
@@ -140,16 +146,16 @@ const myApp2 = App(App.eventTypeInput + App.textContent);</code></pre>
 					<li id="l-4-2">Функция возвращающая значение из JS объекта к которому привязываемся</li>
 				</ul>
 				<pre><code class="javascript">const myApp = App();
-	const appData = myApp.buildData({key: {k1: {l1: {m1: 1, m11: 2}}}});
+const appData = myApp.buildData({key: {k1: {l1: {m1: 1, m11: 2}}}});
 
-	myApp.bind('.txt-input', () => appData.key.k1.l1.m1);</code></pre>
+myApp.bind('.txt-input', () => appData.key.k1.l1.m1);</code></pre>
 				<span id="alternative-text">Возможен такой вариант:</span>
 				<pre><code class="javascript">const myApp = App();
-	const appData = myApp.buildData({key: {l1: {m1: 1, m11: 2}}});
-	const obj = appData.key.l1;
-	const elm = document.querySelector('.txt-area');
+const appData = myApp.buildData({key: {l1: {m1: 1, m11: 2}}});
+const obj = appData.key.l1;
+const elm = document.querySelector('.txt-area');
 
-	myApp.bind(elm, () => obj.m1);</code></pre>
+myApp.bind(elm, () => obj.m1);</code></pre>
 
 				<h4 id="xrbind">xrBind</h4>
 				<span id="xrbind-description">Расширенное двустороннее связывание. Принцип действия аналогичен <b class="tblue">bind</b>.</span><br>

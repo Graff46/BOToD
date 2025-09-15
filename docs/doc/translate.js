@@ -98,7 +98,7 @@ const Translate = {
 	'l-8-2-2': ['или использовать неотслеживаемый JS объект в 1-м аргументе (см. Важные заметки).', 'or use an untraceable JS object in the 1st argument (see important notes).'],
 	'l-8-2-3': ['Стоит учесть, что данный функционал также ведёт к отсутствию реактивности в пункте выше', 'It is worth considering that this functionality also leads to a lack of reactivity in the paragraph above.'],
 	general: ['Общее', 'General'],
-	introduction: ['Ввидение', 'Introduction'],
+	introduction: ['Введение', 'Introduction'],
 	quickstart: ['Быстрый старт', 'Quickstart'],
 	basics: ['Основы', 'Basics'],
 	createapp: ['Создание приложения', 'Create App'],
@@ -114,8 +114,9 @@ const Translate = {
 	unb4: ['Булевый флаг. При', 'Boolean flag. When'],
 	unb5: ['удаляются привязки кроме привязок', 'bindings are deleted except for bindings'],
 	note3: ['Если удалить дочерний JS объект оператором', 'If you delete a child JS object with the operator',],
-	note4: [', то отвязки биндингов не будет.', 'then there will be no untethering of bindings.'],
+	note4: [', то отвязки биндингов не будет.', ', then there will be no untethering of bindings.'],
 	note5: ['В вышепоказанном коде через 2 секунды значение DOM элемента будет сброшено, а еще через 2 секунды значение DOM элемента будет 55.', 'In the above code, after 2 seconds, the value of the DOM element will be reset, and after another 2 seconds, the value of the DOM element will be 55.'],
+	'c-react': ['Для обеспечения реактивности библиотека использует Proxy. Поэтому, чтобы отслеживать изменения в объекте, необходимо его обернуть в Proxy. Для этого используется метод экземпляра приложения:', 'To enable reactivity, the library uses Proxy. Therefore, to track changes in an object, it must be wrapped in a Proxy. For this purpose, the application instance method is used:'],
 };
 
 Translate['l-7-1'] = Translate['l-6-1'] = Translate['l-5-1'] = Translate['l-4-1'] = Translate['selector-list-2'] = Translate['selector-list'];
