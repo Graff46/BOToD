@@ -5,7 +5,7 @@ self.App = (() => {
 	var _DEEP = Symbol('deep');
 	var _PRNTS = Symbol('prnts');
 
-	return (settingBits = 0) => {
+	return (settingBits = 0, globalHandler, globalCallback) => {
 		var EVENT_TYPE = settingBits & 0b1 ? 'input' : 'change';
 		var BINDING_PROPERTY = settingBits & 0b10 ? 'textContent' : 'value';
 
@@ -26,7 +26,8 @@ self.App = (() => {
 		var maxCode = 1;
 		var matrix = Object.create(null);
 
-		var rootObj = Object.create(null);
+		var extInterface = null;
+		var rootObj = null;
 
 		var _eachBit = (code, collector, el, needAddSelf) => {
 			var insert = bcode => (collector[bcode] || (collector[bcode] = new Set())).add(el);
@@ -90,8 +91,6 @@ self.App = (() => {
 		};
 
 		var _unbind = (el, onlyBind) => {
-			if (el instanceof Function) return _unbindObj(el);
-
 			const elm = getEl(el);
 
 			el2handlerBind.delete(elm);
@@ -105,13 +104,8 @@ self.App = (() => {
 			return resetEl(elm);
 		}
 
-		var _unbindObj = (obj, prop, onlyReset) => {
-			if (obj instanceof Function) {
-				needStoredGetterFlg = true;
-				obj = obj();
-				needStoredGetterFlg = false;
-			} else
-				obj = obj[prop];
+		var _unbindObj = (obj, onlyReset, prop) => {
+			obj = prop ? obj[prop] : currentObjProp.obj;
 
 			var ldeep = obj[_DEEP];
 			if ((!onlyReset) && (tmp = matrix[ldeep - 1])) delete tmp[prop || currentObjProp.prop];
@@ -186,6 +180,7 @@ self.App = (() => {
 						currentObjProp.prop	= prop;
 						currentObjProp.obj = receiver;
 						currentObjProp.childMask = childCode;
+						Object.freeze(currentObjProp);
 					}
 
 					return Reflect.get(target, prop, receiver);
@@ -219,7 +214,7 @@ self.App = (() => {
 
 				deleteProperty: function(target, prop) {
 					if ((target[prop] instanceof Object) && target[prop][_IS_PROXY]) 
-						_unbindObj(target, prop, true);
+						_unbindObj(target, true, prop);
 
 					return Reflect.deleteProperty(target, prop);
 				},
@@ -227,23 +222,20 @@ self.App = (() => {
 		}
 
 		bind = (elSel, val, key) => {
-			const callback = (el, cop) => cop.obj[cop.prop] = el[BINDING_PROPERTY];
+			const callback = (globalCallback) || ((el, cop) => cop.obj[cop.prop] = el[BINDING_PROPERTY]);
 			var parents = Array.from(currentObjProp.obj[_PRNTS]), prp = currentObjProp.prop;
-			const handler = el => el[BINDING_PROPERTY] = parents.reduce((acc, p) => acc[p], rootObj)[key || prp];
+			const handler = globalHandler ?
+				el => globalHandler( el, parents.reduce((acc, p) => acc[p], rootObj), prp ) :
+				((el, k) => el[BINDING_PROPERTY] = parents.reduce((acc, p) => acc[p], rootObj)[k || prp]);
 
-			return extInterface.xrBind(elSel, handler, callback, true);
+			return extInterface.xrBind(elSel, handler, callback, true, key);
 		}
 
 		xrBind = (el, handler, callback, __needCurrObj = false, rptKey, storyCall) => {
 			const elm = getEl(el);
 
-			if (handler instanceof Function) {
-				needStoredGetterFlg = true;
-				handler(elm, rptKey);
-			} else {
-				var parents = Array.from(currentObjProp.obj[_PRNTS]), prp = currentObjProp.prop;
-				handler = el => el[BINDING_PROPERTY] = parents.reduce((acc, p) => acc[p], rootObj)[prp];
-			}
+			needStoredGetterFlg = true;
+			handler(elm, rptKey);
 			needStoredGetterFlg = false;
 
 			var cObjProp = __needCurrObj ? Object.create(null) : null;
@@ -278,6 +270,7 @@ self.App = (() => {
 				if (!(storyCall && repeatStore[iter[_MASK]]))	
 					addRepeat(extInterface.repeat.bind(null, elm, parents, bindHandle, xrBindCallbackOrFlag), elm, group);
 
+				currentObjProp = null;
 				El2group.set(elm, group);
 			}
 
@@ -295,7 +288,7 @@ self.App = (() => {
 					if (xrBindCallbackOrFlag instanceof Function)
 						extInterface.xrBind(newEl, bindHandle, xrBindCallbackOrFlag, false, key);
 					else if (xrBindCallbackOrFlag && bindHandle)
-						extInterface.bind(newEl, bindHandle, key);
+						extInterface.xrBind(newEl, globalHandler ? globalHandler.bind(null, newEl, iter, key) : el => el[BINDING_PROPERTY] = iter[key], key);
 					else if (bindHandle)
 						bindHandle(newEl, key);
 
@@ -325,9 +318,10 @@ self.App = (() => {
 		return extInterface = Object.create(null, {
 			buildData: {value: obj => rootObj = buildData(obj)},
 			unbind: {value: _unbind},
+			xrBind: {value: xrBind},
 			bind: {get: () => needStoredGetterFlg = true && bind},
-			xrBind: {get: () => needStoredGetterFlg = true && xrBind},
 			repeat: {get: () => needStoredGetterFlg = true && repeat},
+			unbindObj: {get: () => needStoredGetterFlg = true && _unbindObj},
 		});
 	};
 })();

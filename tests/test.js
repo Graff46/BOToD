@@ -14,26 +14,14 @@ const obj = {
 	two: 5,
 };
 
-const myApp = App(obj, App.eventTypeInput);
+const myApp = App(App.eventTypeInput, (el, obj, prp) => el.value = obj[prp] + '#');
 const appData = myApp.buildData(obj);
 
 const y = appData.key;
 const yy = appData.one;
-
-//myApp.xrBind('.i3', x => x.value = y.k1.l1.m1, (el) => y.k1.l1.m1 = el.value);
-myApp.bind('.i1', yy.k1.l1.m1);
-//setTimeout(() => { yy.k1 = {l1: {m1: 99}}; }, 2000);
-
-//myApp.repeat('.i2', x => y.k1.l1, (el, k) => el.value = y.k1.l1[k], (el, k) => y.k1.l1[k] = el.value);
-//myApp.repeat('.i2', x => appData, (k) => appData[k] ? k: 0);
 var tt;
-// setTimeout(() => { y.k1 = {l1:{ m1: 55 }}; }, 2000);
-// setTimeout(() => { self.tt= 1; y.k1.l1.m111 = 3; /*App.bind('.i3', x => yy.l2.m2)*/;}, 3000);
-// setTimeout(() => {y.k1.l1 = {m1: 4, m11: 5, m1111: 6 };}, 4000);
-// setTimeout(() => delete y.k1, 5000);
-// setTimeout(() => y.k1 = {l1: { m1: 66, m11: 77}}, 6000);
 
-var max = 1000;
+var max = 3;
 async function render() {
 	let str = '';
 	for (let i = 1; i <= max; i++) {
@@ -55,7 +43,7 @@ async function runTestArray() {
 	for (let i = 1; i <= max; i++) {
 		myApp.xrBind(`.i3${i}`, x => x.value = y.k1.l1[0], (el) => y.k1.l1[0] = el.value);
 		myApp.bind(`.i1${i}`, y.k1.l1[0]);
-		myApp.repeat(`.i2${i}`, y.k1.l1, (el, k) => el.value = y.k1.l1[k], (el, k) => y.k1.l1[k] = el.value);
+		myApp.repeat(`.i2${i}`, y.k1.l1, true);
 	}
 	console.timeEnd(1)
 
@@ -64,6 +52,7 @@ async function runTestArray() {
 	setTimeout(() => {y.k1.l1 = [12, 15, 17 ];}, 6000);
 	setTimeout(() => delete y.k1, 8000);
 	setTimeout(() => y.k1 = {l1: [ 66, 77]}, 10_000);
+	setTimeout(() => y.k1.l1[0] = 100, 12_000);
 }
 
 async function runTestObject() {
@@ -73,7 +62,7 @@ async function runTestObject() {
 	for (let i = 1; i <= max; i++) {
 		myApp.xrBind(`.i3${i}`, x => x.value = yy.k1.l1.m1, (el) => yy.k1.l1.m1 = el.value);
 		myApp.bind(`.i1${i}`, yy.k1.l1.m1);
-		myApp.repeat(`.i2${i}`, yy.k1.l1, (el, k) => el.value = yy.k1.l1[k], (el, k) => yy.k1.l1[k] = el.value);
+		myApp.repeat(`.i2${i}`, yy.k1.l1, true);
 	}
 	console.timeEnd(1)
 
