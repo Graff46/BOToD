@@ -76,7 +76,9 @@ self.App = (() => {
 		}
 
 		var resetEl = elm => {
-			elm[BINDING_PROPERTY] = null;
+			if (globalHandler) globalHandler(elm, [null], 0);
+
+				elm[BINDING_PROPERTY] = null;
 
 			const group = El2group.get(elm);
 			if (group) {
@@ -110,6 +112,7 @@ self.App = (() => {
 			var ldeep = obj[_DEEP];
 			if ((!onlyReset) && (tmp = matrix[ldeep - 1])) delete tmp[prop || currentObjProp.prop];
 			currentObjProp = null;
+			needStoredGetterFlg = false;
 
 			var handler = onlyReset ? resetEl : _unbind;
 			var row = null;
@@ -126,8 +129,8 @@ self.App = (() => {
 						for (let prp in row) if (row[prp] === code) delete row[prp];
 				}
 
-				[repeatStore, bindReset].forEach(acc => {
-					if ((acc[code]) && (tmp = acc[code])) {
+				[repeatStore, bindReset].forEach(stor => {
+					if ((stor[code]) && (tmp = stor[code])) {
 						tmp.forEach(el => handler(el));
 						if (!onlyReset) delete acc[code];
 					}
@@ -228,13 +231,13 @@ self.App = (() => {
 				el => globalHandler( el, parents.reduce((acc, p) => acc[p], rootObj), prp ) :
 				((el, k) => el[BINDING_PROPERTY] = parents.reduce((acc, p) => acc[p], rootObj)[k || prp]);
 
-			return extInterface.xrBind(elSel, handler, callback, true, key);
+			return extInterface.xrBind(elSel, handler, callback, true, key, 0);
 		}
 
-		xrBind = (el, handler, callback, __needCurrObj = false, rptKey, storyCall) => {
+		xrBind = (el, handler, callback, __needCurrObj = false, rptKey, stateCall) => {
 			const elm = getEl(el);
 
-			needStoredGetterFlg = true;
+			needStoredGetterFlg = stateCall !== 0;
 			handler(elm, rptKey);
 			needStoredGetterFlg = false;
 
@@ -244,10 +247,10 @@ self.App = (() => {
 				cObjProp.prop = currentObjProp.prop;
 			}
 
-			if ( (currentObjProp) && !(storyCall && bindUpd[currentObjProp.mask]) )
+			if ( (currentObjProp) && !(stateCall && bindUpd[currentObjProp.mask]) )
 				addBind(handler.bind(null, elm, rptKey), extInterface.xrBind.bind(null, elm, handler, callback, __needCurrObj, rptKey), elm);
 
-			elm.removeEventListener(EVENT_TYPE, el2eventHandler.get(elm));
+			if (tmp = el2eventHandler.get(elm)) elm.removeEventListener(EVENT_TYPE, tmp);
 			if (callback) {
 				const eventHandler = event => callback(event.currentTarget, cObjProp || rptKey);
 				el2eventHandler.set(elm, eventHandler);

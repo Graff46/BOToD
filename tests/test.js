@@ -7,7 +7,8 @@ const obj = {
 
 	one: {
 		k1: {
-			l1: {m1: 22, m11: 11}
+			l1: {m1: 22, m11: 11},
+			l2: {m1: 222, m11: 111},
 		}
 	},
 
@@ -62,14 +63,14 @@ async function runTestObject() {
 	for (let i = 1; i <= max; i++) {
 		myApp.xrBind(`.i3${i}`, x => x.value = yy.k1.l1.m1, (el) => yy.k1.l1.m1 = el.value);
 		myApp.bind(`.i1${i}`, yy.k1.l1.m1);
-		myApp.repeat(`.i2${i}`, yy.k1.l1, true);
+		myApp.repeat(`.i2${i}`, yy.k1, (el, k) => el.value = yy.k1[k].m1, (el, k) => yy.k1[k].m1 = el.value);
 	}
 	console.timeEnd(1)
 
-	setTimeout(() => { yy.k1 = {l1: {m1: 55}}; }, 2000);
-	setTimeout(() => { yy.k1.l1.m111 = 3; myApp.unbind(`.i33`);}, 4000);
+	//setTimeout(() => { yy.k1 = {l1: {m1: 55}}; }, 2000);
+	setTimeout(() => { yy.k1.l1.m111 = 3;/* myApp.unbind(`.i33`);*/}, 4000);
 	setTimeout(() => {yy.k1.l1 = {m1: 65, m11: 31, m111: 4};}, 6000);
 	setTimeout(() => {delete yy.k1; tt=1 }, 8000);
-	setTimeout(() => {yy.k1 = {l1: {m1: 77, m11: 88}}; }, 10_000);
-	setTimeout(() => yy.k1.l1.m1 = 100, 12_000);
+	//setTimeout(() => {yy.k1 = {l1: {m1: 77, m11: 88}}; }, 10_000);
+	//setTimeout(() => yy.k1.l1.m1 = 100, 12_000);
 }
