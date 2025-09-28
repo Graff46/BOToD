@@ -231,10 +231,10 @@ self.App = (() => {
 				el => globalHandler( el, parents.reduce((acc, p) => acc[p], rootObj), prp ) :
 				((el, k) => el[BINDING_PROPERTY] = parents.reduce((acc, p) => acc[p], rootObj)[k || prp]);
 
-			return extInterface.xrBind(elSel, handler, callback, true, key, 0);
+			return extInterface.xrBind(elSel, handler, callback, key, true, 0);
 		}
 
-		xrBind = (el, handler, callback, __needCurrObj = false, rptKey, stateCall) => {
+		xrBind = (el, handler, callback, rptKey, __needCurrObj = false, stateCall) => {
 			const elm = getEl(el);
 
 			needStoredGetterFlg = stateCall !== 0;
@@ -248,7 +248,7 @@ self.App = (() => {
 			}
 
 			if ( (currentObjProp) && !(stateCall && bindUpd[currentObjProp.mask]) )
-				addBind(handler.bind(null, elm, rptKey), extInterface.xrBind.bind(null, elm, handler, callback, __needCurrObj, rptKey), elm);
+				addBind(handler.bind(null, elm, rptKey), extInterface.xrBind.bind(null, elm, handler, callback, rptKey, __needCurrObj), elm);
 
 			if (tmp = el2eventHandler.get(elm)) elm.removeEventListener(EVENT_TYPE, tmp);
 			if (callback) {
@@ -262,8 +262,8 @@ self.App = (() => {
 			var elm = getEl(el);
 
 			needStoredGetterFlg = true;
-			let parents = storyCall ? iterObj : Array.from(currentObjProp.obj[_PRNTS]);
-			let iter = storyCall ? parents.reduce((acc, p) => acc[p], rootObj) : iterObj;
+			const parents = (storyCall) || (iterObj === rootObj) ? iterObj : Array.from(currentObjProp.obj[_PRNTS]);
+			const iter = (storyCall) && !(iterObj === rootObj) ? parents.reduce((acc, p) => acc[p], rootObj) : iterObj;
 			needStoredGetterFlg = false;
 
 			var group = Object.create(null);
@@ -289,9 +289,9 @@ self.App = (() => {
 					group[key] = newEl;
 
 					if (xrBindCallbackOrFlag instanceof Function)
-						extInterface.xrBind(newEl, bindHandle, xrBindCallbackOrFlag, false, key);
+						extInterface.xrBind(newEl, bindHandle, xrBindCallbackOrFlag, key, false);
 					else if (xrBindCallbackOrFlag && bindHandle)
-						extInterface.xrBind(newEl, globalHandler ? globalHandler.bind(null, newEl, iter, key) : el => el[BINDING_PROPERTY] = iter[key], key);
+						extInterface.xrBind(newEl, globalHandler ? globalHandler.bind(null, newEl, iter, key) : el => el[BINDING_PROPERTY] = iter[key], null, key);
 					else if (bindHandle)
 						bindHandle(newEl, key);
 
