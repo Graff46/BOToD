@@ -288,14 +288,14 @@ self.App = (() => {
 
 					group[key] = newEl;
 
+					fragment.append(newEl);
+
 					if (xrBindCallbackOrFlag instanceof Function)
 						extInterface.xrBind(newEl, bindHandle, xrBindCallbackOrFlag, key, false);
 					else if (xrBindCallbackOrFlag && bindHandle)
-						extInterface.xrBind(newEl, globalHandler ? globalHandler.bind(null, newEl, iter, key) : el => el[BINDING_PROPERTY] = iter[key], null, key);
+						extInterface.xrBind(newEl, bindHandle || (globalHandler ? globalHandler.bind(null, newEl, iter, key) : el => el[BINDING_PROPERTY] = iter[key]), null, key);
 					else if (bindHandle)
 						bindHandle(newEl, key);
-
-					fragment.append(newEl);
 				} else
 					group[key] = updGroup[key];
 
