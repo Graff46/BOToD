@@ -290,9 +290,18 @@ self.App = (() => {
 
 					fragment.append(newEl);
 
+					if (xrBindCallbackOrFlag) {
+						extInterface.xrBind(
+							newEl,
+							bindHandle || (globalHandler ? globalHandler.bind(null, newEl, iter, key) : el => el[BINDING_PROPERTY] = iter[key]),
+							xrBindCallbackOrFlag instanceof Function ? xrBindCallbackOrFlag : xrBindCallbackOrFlag === null ? null : (globalCallback) || ((el, cop) => cop.obj[cop.prop] = el[BINDING_PROPERTY]),
+							key
+						);
+					}
+
 					if (xrBindCallbackOrFlag instanceof Function)
 						extInterface.xrBind(newEl, bindHandle, xrBindCallbackOrFlag, key, false);
-					else if (xrBindCallbackOrFlag && bindHandle)
+					else if (xrBindCallbackOrFlag)
 						extInterface.xrBind(newEl, bindHandle || (globalHandler ? globalHandler.bind(null, newEl, iter, key) : el => el[BINDING_PROPERTY] = iter[key]), null, key);
 					else if (bindHandle)
 						bindHandle(newEl, key);
