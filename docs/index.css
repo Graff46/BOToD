@@ -1,7 +1,7 @@
 
 body {
 	height: 100%;
-	background-image: radial-gradient(var(--s-blue-color), #f000);
+	background-image: radial-gradient(#a4b0b9, #f000);
 }
 
 #cpt {
@@ -20,8 +20,8 @@ body {
 #cpt > section {
 	max-width: 52rem;
 	z-index: 2;
-	background-color: #aabfce;
-	box-shadow: 0 0 100px 50px #aabfce;
+	background-color: #afbdc8;
+	box-shadow: 0 0 100px 50px #b2bfc8;
 	padding: 1rem;
 	border-radius: 0.5rem;
 	transition: box-shadow 0.35s;
