@@ -101,17 +101,17 @@ const appData = myApp.buildData(obj);</code></pre>
 				<i id="arguments-title">Аргументы:</i>
 				<ul>
 					<li id="selector-list">Селектор или сам DOM элемент</li>
-					<li id="func-li1">Функция возвращающая значение из JS объекта к которому привязываемся</li>
+					<li id="func-li1">JS объект к полю которого привязываемся</li>
 				</ul>
-				<pre><code class="javascript">myApp.bind('.txt-input', x => appData.key.k1.l1.m1);</code></pre>
+				<pre><code class="javascript">myApp.bind('.txt-input', appData.key.k1.l1.m1);</code></pre>
 				<span id="create-inputs-text">Создадим input элементы по количеству элементов в массиве (объекте) и каждому новому элементу будет установлен атрибут value</span><br>
 				<i id="arguments-title2">Аргументы:</i>
 				<ul>
 					<li id="selector-list-2">Селектор или сам DOM элемент</li>
-					<li id="list-2-2">Функция возвращающая итерируемый объект по которому будем повторять выше указанный DOM элемент</li>
+					<li id="list-2-2">Итерируемый JS объект по которому будут создаваться DOM элементы</li>
 					<li id="list-2-3">Функция возвращающая значение из JS объекта к которому привязываемся, в данном случае эта функция имеет первый аргумент - ключ объекта который будет использован на этапах создания копии DOM элемента</li>
 				</ul>
-				<pre><code class="javascript">myApp.repeat('div.input-block > input', x => appData.k1.l1, k => appData.k1.l1[k]);</code></pre>
+				<pre><code class="javascript">myApp.repeat('div.input-block > input', appData.k1.l1, k => appData.k1.l1[k]);</code></pre>
 
 				<hr>
 				<h2 id="basics">Основы</h2>
@@ -119,12 +119,38 @@ const appData = myApp.buildData(obj);</code></pre>
 				<span id="app-function-text">После того, как библиотека будет подключена в глобальной области видимости появится функция <b class="tblue">App</b>, которая возвращает экземпляр приложения.</span><br>
 				<i class="warn"><u id="warning-text">Следите за тем, чтобы не переназначить идентификатор <b class="tblue">App</b> в глобальной области видимости</u></i>
 				<pre><code class="javascript">const myApp = App();
+const globalHandler = (el, data, tempData) => el.value = (el.textContent = data[tempData.prop]).toUpperCase();
+const globalCallback = (el, tempData) => tempData.obj[tempData.prop] = el.textContent;
+
 const myApp = App(App.eventTypeInput | App.textContent);
-const myApp2 = App(App.eventTypeInput + App.textContent);</code></pre>
+const myApp2 = App(App.eventTypeInput + App.textContent);
+const myApp3 = App(null, globalHandler, globalCallback);</code></pre>
 				<span id="configuration-text">При создании экземпляра приложения можно задать настройки определяющие правила работы данного экземпляра приложения. Указание настроек осуществляется путём указания флагов в аргументах функции <b class="tblue">App</b> указанной выше. Идентификаторы флагов доступны как статические свойства объекта функции <b class="tblue">App</b>. На данный момент доступны следующие флаги:</span>
 				<ul>
 					<li><b class="tblue">eventTypeInput</b><span id="l-3-1-1"> — устанавливает тип обработчиков событий на связанных элементах в </span><a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/Element/input_event">input</a><span id="l-3-1-2">. Иначе будет установлено</span> <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/change_event">change</a></li>
 					<li><b class="tblue">textContentBinding</b><span id="l-3-2-1"> — устанавливает привязку к</span> <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent">textContent</a> <span id="l-3-2-2">DOM элемента</span><span id="l-3-2-3">. Иначе установлено в</span> <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/value">value</a></li>
+				</ul>
+				<span id="conf-pt1">Нижеуказанные параметры указываюся без предыдущих, чтобы небыло конфликтов</span>
+				<ul>
+					<li><b class="tblue">globalHandler</b><span id="l-3-3-1"> — функция - глобальный обработчик для связывания данных с DOM объектами. Является аналогом 2-го аргумента метода </span><b class="tblue">bind</b><i id="arguments7">Аргументы:</i></li>
+					<ul>
+						<li id="l-3-3-1-1">DOM элемент из 1-го аргумента данного метода</li>
+						<li id="l-3-3-1-2">JS объект поле которого было ранее привязано</li>
+						<li id="l-3-3-1-3">Объект содержащих поля:</li>
+						<ul>
+							<li><b class="tblue">obj</b><span id="l-3-3-1-3-1"> - JS объект поле которого было ранее привязано</span></li>
+							<li><b class="tblue">prop</b><span id="l-3-3-1-3-2"> - имя поля</span></li>
+						</ul>
+					</ul>
+					<li><b class="tblue">globalCallback</b><span id="l-3-3-2"> — коллбек для событий со от DOM объектов. Является аналогом 3-го аргумента метода </span><b class="tblue">bind</b><i id="arguments7">Аргументы:</i></li>
+					<ul->
+						<li id="l-3-3-2-1">DOM элемент из 1-го аргумента данного метода</li>
+						<li id="l-3-3-1-3">Объект содержащих поля:</li>
+						<ul>
+							<li><b class="tblue">obj</b><span id="l-3-3-1-3-1"> - JS объект поле которого было ранее привязано</span></li>
+							<li><b class="tblue">prop</b><span id="l-3-3-1-3-2"> - имя поля</span></li>
+						</ul>
+					</ul->
 				</ul>
 				<i class="warn"><u id="flags-warning">Флаги являются битовыми флагами, их можно сочетать с помощью операции битового оператора "ИЛИ" или арифметического сложения</u></i>
 
@@ -137,103 +163,105 @@ const myApp = App();
 const appData = myApp.buildData(data);</code></pre>
 
 				<hr>
-				<h3 id="bindings">Связывания</h3>
+			<h3 id="bindings">Связывания</h3>
 				<h4 id="bind">bind</h4>
-				<span id="bind-description">Простое двустороннее связывание. Отслеживает изменение поля объекта (массива) и меняет свойство value или textContent DOM элемента. Если поменять значение в DOM элементе - то изменится связанное поле объекта соответственно.</span><br>
-				<i id="arguments-title3">Аргументы:</i>
-				<ul>
-					<li id="l-4-1">Селектор или сам DOM элемент</li>
-					<li id="l-4-2">Функция возвращающая значение из JS объекта к которому привязываемся</li>
-				</ul>
-				<pre><code class="javascript">const myApp = App();
+					<span id="bind-description">Простое двустороннее связывание. Отслеживает изменение поля объекта (массива) и меняет свойство value или textContent DOM элемента. Если поменять значение в DOM элементе - то изменится связанное поле объекта соответственно.</span><br>
+					<i id="arguments-title3">Аргументы:</i>
+					<ul>
+						<li id="l-4-1">Селектор или сам DOM элемент</li>
+						<li id="l-4-2">Поле из JS объекта к которому привязываемся</li>
+					</ul>
+					<pre><code class="javascript">const myApp = App();
 const appData = myApp.buildData({key: {k1: {l1: {m1: 1, m11: 2}}}});
 
-myApp.bind('.txt-input', () => appData.key.k1.l1.m1);</code></pre>
+myApp.bind('.txt-input', appData.key.k1.l1.m1);</code></pre>
 				<span id="alternative-text">Возможен такой вариант:</span>
 				<pre><code class="javascript">const myApp = App();
 const appData = myApp.buildData({key: {l1: {m1: 1, m11: 2}}});
 const obj = appData.key.l1;
 const elm = document.querySelector('.txt-area');
 
-myApp.bind(elm, () => obj.m1);</code></pre>
+myApp.bind(elm, obj.m1);</code></pre>
+					<span id="article-global" class="info">Функции-коллбэки можно не указывать, если были указаны <b class="tblue">globalHandler</b>, <b class="tblue">globalHandler</b></span>
 
 				<h4 id="xrbind">xrBind</h4>
-				<span id="xrbind-description">Расширенное двустороннее связывание. Принцип действия аналогичен <b class="tblue">bind</b>.</span><br>
-				<i id="arguments-title4">Аргументы:</i>
-				<ul>
-					<li id="l-5-1">Селектор или сам DOM элемент</li>
-					<li id="l-5-2">Функция возвращающая значение из JS объекта к которому привязываемся</li>
-					<li><span id="l-5-3">Функция-коллбэк которая выполняется при изменении значения JS объекта, также данная функция выполнится сразу.</span> <i id="arguments">Аргументы:</i>
-						<ul><li id="l-5-3-1">DOM элемент из 1-го аргумента данного метода</li></ul>
-					</li>
-					<li><span id="l-5-4">Функция-коллбэк которая выполняется при изменении значения DOM объекта. Допускается пропустить данный аргумент, в этом случае обработка событий DOM объекта отсутствует, что можно использовать для "облегчения" кода.</span> <i id="arguments2">Аргументы:</i>
-						<ul>
-							<li id="l-5-4-1">DOM элемент из 1-го аргумента данного метода</li>
-							<li id="l-5-4-2">Значение поля JS объекта которое было ранее привязано</li>
-						</ul>
-					</li>
-				</ul>
-				<span id="implementation-text">Реализация метода <b class="tblue">bind</b> методом <b class="tblue">xrBind</b>:</span>
-				<pre><code class="javascript">const myApp = App();
+					<span id="xrbind-description">Расширенное двустороннее связывание. Принцип действия аналогичен <b class="tblue">bind</b>.</span><br>
+					<i id="arguments-title4">Аргументы:</i>
+					<ul>
+						<li id="l-5-1">Селектор или сам DOM элемент</li>
+						<li id="l-5-2">Функция возвращающая значение из JS объекта к которому привязываемся или поле из JS объекта к которому привязываемся</li>
+						<li><span id="l-5-3">Функция-коллбэк которая выполняется при изменении значения JS объекта, также данная функция выполнится сразу.</span> <i id="arguments">Аргументы:</i>
+							<ul><li id="l-5-3-1">DOM элемент из 1-го аргумента данного метода</li></ul>
+						</li>
+						<li><span id="l-5-4">Функция-коллбэк которая выполняется при изменении значения DOM объекта. Допускается пропустить данный аргумент, в этом случае обработка событий DOM объекта отсутствует, что можно использовать для "облегчения" кода.</span> <i id="arguments2">Аргументы:</i>
+							<ul>
+								<li id="l-5-4-1">DOM элемент из 1-го аргумента данного метода</li>
+								<li id="l-5-4-2">Значение поля JS объекта которое было ранее привязано</li>
+							</ul>
+						</li>
+					</ul>
+					<span id="implementation-text">Реализация метода <b class="tblue">bind</b> методом <b class="tblue">xrBind</b>:</span>
+					<pre><code class="javascript">const myApp = App();
 const appData = myApp.buildData({key: {m1: 1, m11: 2}});
 
-myApp.xrBind('.txt-area', () => appData.m1, el => el.value = appData.m1, (el, val) => el.value = val);</code></pre>
+myApp.xrBind('.txt-area', () => appData.m1, el => el.value = appData.m1, (el, val) => el.value = val);
+myApp.xrBind('.txt-area', appData.m1, el => el.value = appData.m1, (el, val) => el.value = val);</code></pre>
 
 				<h4 id="repeat">repeat</h4>
-				<span id="repeat-description">Метод копирования DOM объекта по количеству элементов итерируемого объекта, также устанавливает привязки.</span><br>
-				<u id="three-args-title">Аргументы для реализации с тремя аргументами:</u>
-				<ul>
-					<li id="l-6-1">Селектор или сам DOM элемент</li>
-					<li id="l-6-2">Функция возвращающая JS итерируемый объект</li>
-					<li><span id="l-6-3-1">Коллбэк аналогичен 3-му аргументу</span> <b class="tblue">bind</b> <span id="l-6-3-2">(вызывается на каждой итерации).</span> <i id="arguments3">Аргументы:</i>
-						<ul>
-							<li id="l-6-3-3">Ключ объекта (массива) который используется в итерации</li>
-						</ul>
-					</li>
-				</ul>
-				<pre><code class="javascript">const myApp = App();
+					<span id="repeat-description">Метод копирования DOM объекта по количеству элементов итерируемого объекта, также устанавливает привязки.</span><br>
+					<u id="three-args-title">Аргументы для реализации с тремя аргументами:</u>
+					<ul>
+						<li id="l-6-1">Селектор или сам DOM элемент</li>
+						<li id="l-6-2">Итерируемый JS объект по которому будут создаваться DOM элементы</li>
+						<li><span id="l-6-3-1">Коллбэк аналогичен 3-му аргументу</span> <b class="tblue">bind</b> <span id="l-6-3-2">(вызывается на каждой итерации).</span> <i id="arguments3">Аргументы:</i>
+							<ul>
+								<li id="l-6-3-3">Ключ объекта (массива) который используется в итерации</li>
+							</ul>
+						</li>
+					</ul>
+					<pre><code class="javascript">const myApp = App();
 const appData = myApp.buildData({key: {m1: 1, m11: 2}});
 
 myApp.repeat('.list-input', x => appData.key, k => appData.key[k]);</code></pre>
-				<u id="four-args-title">Аргументы для реализации с четырьмя аргументами (аналогично <b class="tblue">xrBind</b>):</u>
-				<ul>
-					<li id="l-7-1">Селектор или сам DOM элемент</li>
-					<li id="l-7-2">Функция возвращающая JS итерируемый объект</li>
-					<li><span id="l-7-3-1">Коллбэк аналогичен 3-му аргументу</span> <b class="tblue">xrBind</b> <span  id="l-7-3-2">(вызывается на каждой итерации).</span> <i id="arguments4">Аргументы:</i>
-						<ul>
-							<li id="l-7-3-3">DOM элемент созданный на данной итерации</li>
-							<li id="l-7-3-4">Ключ объекта (массива) который используется в итерации</li>
-						</ul>
-					</li>
-					<li>Коллбэк аналогичен 4-му аргументу <b class="tblue">xrBind</b> (вызывается на каждой итерации). <i id="arguments5">Аргументы:</i>
-						<ul>
-							<li id="l-7-4-1">DOM элемент созданный на данной итерации</li>
-							<li id="l-7-4-2">Значение поля JS объекта которое было ранее привязано</li>
-						</ul>
-					</li>
-				</ul>
-				<pre><code class="javascript">const myApp = App();
+					<u id="four-args-title">Аргументы для реализации с четырьмя аргументами (аналогично <b class="tblue">xrBind</b>):</u>
+					<ul>
+						<li id="l-7-1">Селектор или сам DOM элемент</li>
+						<li id="l-7-2">Итерируемый JS объект по которому будут создаваться DOM элементы</li>
+						<li><span id="l-7-3-1">Коллбэк аналогичен 3-му аргументу</span> <b class="tblue">xrBind</b> <span  id="l-7-3-2">(вызывается на каждой итерации).</span> <i id="arguments4">Аргументы:</i>
+							<ul>
+								<li id="l-7-3-3">DOM элемент созданный на данной итерации</li>
+								<li id="l-7-3-4">Ключ объекта (массива) который используется в итерации</li>
+							</ul>
+						</li>
+						<li>Коллбэк аналогичен 4-му аргументу <b class="tblue">xrBind</b> (вызывается на каждой итерации). <i id="arguments5">Аргументы:</i>
+							<ul>
+								<li id="l-7-4-1">DOM элемент созданный на данной итерации</li>
+								<li id="l-7-4-2">Значение поля JS объекта которое было ранее привязано</li>
+							</ul>
+						</li>
+					</ul>
+					<pre><code class="javascript">const myApp = App();
 const appData = myApp.buildData({key: {m1: 1, m11: 2}});
 
 myApp.repeat('.i2', x => appData.m1, (el, k) => el.value = appData.key[k], (el, k) => appData.key[k] = el.value);</code></pre>
 
-				<span id="usage-options">Есть варианты использовать данный метод для создания элементов без привязок и реактивности:</span>
-				<ul>
-					<li><span id="l-8-1">Для того чтобы отсутствовала привязка между созданными DOM объектами и полем итерируемого JS объекта для этого нужно 4-м аргументом передать</span> <b class="tblue">false</b> </li>
-					<li><span id="l-8-2-1">Для того чтобы отсутствовала привязка по итерируемому JS объекту (количество полей объекта меняется соответственно меняется количество создаваемых DOM элементов) для этого нужно 4-м аргументом передать</span> <b class="tblue">null</b> <span  id="l-8-2-2">или использовать неотслеживаемый JS объект в 1-м аргументе (см. Важные заметки).</span> <span id="l-8-2-3" class="info">Стоит учесть, что данный функционал также ведёт к отсутствию реактивности в пункте выше</span></li>
-				</ul>
+					<span id="usage-options">Есть варианты использовать данный метод для создания элементов без привязок и реактивности:</span>
+					<ul>
+						<li><span id="l-8-1">Для того чтобы отсутствовала привязка между созданными DOM объектами и полем итерируемого JS объекта для этого нужно 4-м аргументом передать</span> <b class="tblue">false</b> </li>
+						<li><span id="l-8-2-1">Для того чтобы отсутствовала привязка по итерируемому JS объекту (количество полей объекта меняется соответственно меняется количество создаваемых DOM элементов) для этого нужно 4-м аргументом передать</span> <b class="tblue">null</b> <span  id="l-8-2-2">или использовать неотслеживаемый JS объект в 1-м аргументе (см. Важные заметки).</span> <span id="l-8-2-3" class="info">Стоит учесть, что данный функционал также ведёт к отсутствию реактивности в пункте выше</span></li>
+					</ul>
 
-				<hr>
-				<h2 id="unbinds">Развязывания</h2>
+					<hr>
+			<h2 id="unbinds">Развязывания</h2>
 				<h4 id="unbind">unbind</h4>
-				<span class="info" id="unb1">Удаление и перезапись полей объекта не приводит к удалению связываний с этими полями!</span>
-				<span id="unb2">Данный метод используется для снятия связываний с JS объекта или DOM элемента.</span><br>
-				<i id="arguments6">Аргументы:</i>
-				<ul>
-					<li id="unb3">JS объект или DOM элемент c которого убираем прявязки</li>
-					<li><span id="unb4">Булевый флаг. При</span> <b class="tblue">true</b> <span id="unb5">удаляются привязки кроме привязок</span> <b class="tblue">repeat</b></li>
-				</ul>
-				<pre><code class="javascript">const myApp = App();
+					<span class="info" id="unb1">Удаление и перезапись полей объекта не приводит к удалению связываний с этими полями!</span>
+					<span id="unb2">Данный метод используется для снятия связываний с JS объекта или DOM элемента.</span><br>
+					<i id="arguments6">Аргументы:</i>
+					<ul>
+						<li id="unb3">JS объект или DOM элемент c которого убираем прявязки</li>
+						<li><span id="unb4">Булевый флаг. При</span> <b class="tblue">true</b> <span id="unb5">удаляются привязки кроме привязок</span> <b class="tblue">repeat</b></li>
+					</ul>
+					<pre><code class="javascript">const myApp = App();
 const appData = myApp.buildData({key: {m1: 1, m11: 2}});
 
 myApp.repeat('.i2', x => appData.key, (el, k) => el.value = appData.key[k], (el, k) => appData.key[k] = el.value);
@@ -243,14 +271,14 @@ myApp.unbind('input#cd'); // unbind from an DOM element
 myApp.unbind(appData.key); // unbind from an JS Object
 </code></pre>
 
-				<hr>
+					<hr>
 				<h2 id="notes">Важные заметки</h2>
-				<p class="warn" id="warnnotes">Не используйте аргументы в методах и функциях всверх тех, что указаны в данном руководстве!</p>
-				<p id="note1">В методах <b class="tblue">xrBind</b> и <b class="tblue">repeat</b> с 4 аргументами: в аргументе-функции в которой указываем привязку DOM элемента к JS данным (3-й аргумент) нужно в коде читать поле JS объекта, чтобы сработал перехват Proxy и связал нужное поле JS объекта. Этого можно не делать, тогда будет отсутствовать привязка JS данных с DOM объектом.</p>
-				<div><span id="note2">Можно использовать все методы для заполнения данными DOM элементов без каких либо привязок и реактивности, достаточно использовать в качестве источника данных неотслеживаемый JS объект (не использовать</span> <b class="tblue">App.buildData</b><span>)</span></div><br>
+					<p class="warn" id="warnnotes">Не используйте аргументы в методах и функциях всверх тех, что указаны в данном руководстве!</p>
+					<p id="note1">В методах <b class="tblue">xrBind</b> и <b class="tblue">repeat</b> с 4 аргументами: в аргументе-функции в которой указываем привязку DOM элемента к JS данным (3-й аргумент) нужно в коде читать поле JS объекта, чтобы сработал перехват Proxy и связал нужное поле JS объекта. Этого можно не делать, тогда будет отсутствовать привязка JS данных с DOM объектом.</p>
+					<div><span id="note2">Можно использовать все методы для заполнения данными DOM элементов без каких либо привязок и реактивности, достаточно использовать в качестве источника данных неотслеживаемый JS объект (не использовать</span> <b class="tblue">App.buildData</b><span>)</span></div><br>
 
-				<div><span id="note3">Если удалить дочерний JS объект оператором</span> <b class="tblue">delete</b><span id="note4">, то отвязки биндингов не будет.</span></div>
-				<pre><code class="javascript">const myApp = App();
+					<div><span id="note3">Если удалить дочерний JS объект оператором</span> <b class="tblue">delete</b><span id="note4">, то отвязки биндингов не будет.</span></div>
+					<pre><code class="javascript">const myApp = App();
 const appData = myApp.buildData({key: {m1: 1, m11: 2}});
 
 myApp.bind('input#cd', () => appData.key.m11);

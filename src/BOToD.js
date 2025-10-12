@@ -6,6 +6,7 @@ self.App = (() => {
 	var _PRNTS = Symbol('prnts');
 
 	return (settingBits = 0, globalHandler, globalCallback) => {
+		settingBits = settingBits || 0;
 		var EVENT_TYPE = settingBits & 0b1 ? 'input' : 'change';
 		var BINDING_PROPERTY = settingBits & 0b10 ? 'textContent' : 'value';
 
@@ -238,7 +239,7 @@ self.App = (() => {
 			const elm = getEl(el);
 
 			needStoredGetterFlg = stateCall !== 0;
-			handler(elm, rptKey);
+			(handler instanceof Function) && handler(elm, rptKey);
 			needStoredGetterFlg = false;
 
 			var cObjProp = __needCurrObj ? Object.create(null) : null;
@@ -297,13 +298,7 @@ self.App = (() => {
 							xrBindCallbackOrFlag instanceof Function ? xrBindCallbackOrFlag : xrBindCallbackOrFlag === null ? null : (globalCallback) || ((el, cop) => cop.obj[cop.prop] = el[BINDING_PROPERTY]),
 							key
 						);
-					}
-
-					if (xrBindCallbackOrFlag instanceof Function)
-						extInterface.xrBind(newEl, bindHandle, xrBindCallbackOrFlag, key, false);
-					else if (xrBindCallbackOrFlag)
-						extInterface.xrBind(newEl, bindHandle || (globalHandler ? globalHandler.bind(null, newEl, iter, key) : el => el[BINDING_PROPERTY] = iter[key]), null, key);
-					else if (bindHandle)
+					} else if (bindHandle)
 						bindHandle(newEl, key);
 				} else
 					group[key] = updGroup[key];

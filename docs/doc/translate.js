@@ -75,7 +75,7 @@ const Translate = {
 		'You can use all methods to fill DOM elements with data without any bindings and reactivity, just use a non-observed JS object as the data source (do not use'
 	],
 	"selector-list": ['Селектор или сам DOM элемент', 'The selector or the DOM element itself'],
-	"func-li1": ['Функция возвращающая значение из JS объекта к которому привязываемся', 'A function that returns a value from the JS object that we are linking to'],
+	"func-li1": ['JS объект к полю которого привязываемся', 'The JS object whose field we are referring to'],
 	"list-2-2": ['Функция возвращающая итерируемый объект по которому будем повторять выше указанный DOM элемент', 'A function that returns an iterable object that we will use to repeat the above DOM element.'],
 	"list-2-3": ['Функция возвращающая значение из JS объекта к которому привязываемся, в данном случае эта функция имеет первый аргумент - ключ объекта который будет использован на этапах создания копии DOM элемента', 'A function that returns a value from the JS object to which we bind, in this case this function has the first argument - the key of the object that will be used at the stages of creating a copy of the DOM element.'],
 	"l-3-1-1": [' — устанавливает тип обработчиков событий на связанных элементах в ', '— sets the type of event handlers on related elements in '],
@@ -117,10 +117,12 @@ const Translate = {
 	note4: [', то отвязки биндингов не будет.', ', then there will be no untethering of bindings.'],
 	note5: ['В вышепоказанном коде через 2 секунды значение DOM элемента будет сброшено, а еще через 2 секунды значение DOM элемента будет 55.', 'In the above code, after 2 seconds, the value of the DOM element will be reset, and after another 2 seconds, the value of the DOM element will be 55.'],
 	'c-react': ['Для обеспечения реактивности библиотека использует Proxy. Поэтому, чтобы отслеживать изменения в объекте, необходимо его обернуть в Proxy. Для этого используется метод экземпляра приложения:', 'To enable reactivity, the library uses Proxy. Therefore, to track changes in an object, it must be wrapped in a Proxy. For this purpose, the application instance method is used:'],
+	'l-5-2': ['Функция возвращающая значение из JS объекта к которому привязываемся или поле из JS объекта к которому привязываемся', 'A function that returns a value from the JS object to which we are linking or a field from the JS object to which we are linking'],
+	'article-global': ['Функции-коллбэки можно не указывать, если были указаны ', 'In this section, all the methods and functions that can be used to bind data to DOM elements will be considered.'],
 };
 
 Translate['l-7-1'] = Translate['l-6-1'] = Translate['l-5-1'] = Translate['l-4-1'] = Translate['selector-list-2'] = Translate['selector-list'];
-Translate['l-4-2'] = Translate['l-5-2'] = Translate['func-li1'];
+Translate['l-4-2'] = Translate['func-li1'];
 Translate.arguments6 = Translate.arguments5 = Translate.arguments4 = Translate.arguments3 = Translate.arguments2 = Translate.arguments = Translate['arguments-title2'] = Translate['arguments-title3'] = Translate['arguments-title4'] = Translate['arguments-title'];
 Translate['l-5-4-1'] = Translate['l-5-3-1'];
 Translate['l-7-3-4'] = Translate['l-6-3-3'];
