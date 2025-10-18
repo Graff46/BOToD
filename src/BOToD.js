@@ -262,8 +262,8 @@ self.App = (() => {
 			var elm = getEl(el);
 
 			needStoredGetterFlg = true;
-			const parents = (storyCall) || (iterObj === rootObj) ? iterObj : Array.from(currentObjProp.obj[_PRNTS]);
-			const iter = (storyCall) && !(iterObj === rootObj) ? parents.reduce((acc, p) => acc[p], rootObj) : iterObj;
+			const parents = (storyCall) || (iterObj === rootObj) || (!currentObjProp) ? iterObj : Array.from(currentObjProp.obj[_PRNTS]);
+			const iter = (storyCall) && !(iterObj === rootObj) && currentObjProp ? parents.reduce((acc, p) => acc[p], rootObj) : iterObj;
 			needStoredGetterFlg = false;
 
 			var group = Object.create(null);
