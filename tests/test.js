@@ -35,7 +35,7 @@ const nestedLoops = () => {
 		'.i3',
 		appData,
 		(el, k) => myApp.repeat(el, appData[k],
-				(ell, kk, data) => ell.value = appData[k][kk].l1.m1),
+			(ell, kk, data) => ell.value = appData[k][kk].l1.m1),
 		false
 	);
 
@@ -90,10 +90,69 @@ async function runTestObject() {
 	}
 	console.timeEnd(1)
 
-	setTimeout(() => { yy.k1 = {l1: {m1: 55}}; }, 2000);
+	setTimeout(() => { yy.k1 = {l1: {m1: 58}}; }, 2000);
 	setTimeout(() => { yy.k1.l1.m111 = 3;/* myApp.unbind(`.i33`);*/}, 4000);
 	setTimeout(() => {yy.k1.l1 = {m1: 65, m11: 31, m111: 4};}, 6000);
 	setTimeout(() => {delete yy.k1; tt=1 }, 8000);
 	setTimeout(() => {yy.k1 = {l1: {m1: 77, m11: 88}}; }, 10_000);
 	setTimeout(() => yy.k1.l1.m1 = 100, 12_000);
+}
+
+const nestedTest = () => {
+	document.body.innerHTML += '<div class="d"><span class="s"><div class="q"> <p class="p"></p> </div></span></div>';
+
+	const appData = myApp.buildData({
+		one: {
+			11: {
+				111: {
+					1111: 1111,
+					1112: 1112,
+				}
+			},
+			12: {
+				121: {
+					1211: 1211,
+					1212: 1212,
+				}
+			},
+		},
+		two: {
+			21: {
+				212: {
+					2121: 2121,
+					2122: 2122,
+				}
+			},
+			22: {
+				222: {
+					2221: 2221,
+					2222: 2222,
+				}
+			},
+		},
+	});
+
+	/*myApp.repeat(
+		'.d',
+		appData, 
+		(el, k) => myApp.repeat(
+			el.querySelector('.s'),
+			appData[k],
+			(el2, k2) => myApp.repeat(
+				el2.querySelector('.p'),
+				appData[k][k2],
+				(el3, k3)=> el3.textContent = appData[k][k2][k3]) 
+		)
+	)*/
+
+	const f1 = (el, k, data) => el.myprop2 = data[k];
+	const f2 = (el, k, data) => el.textContent = data[k];
+	const f3 = (el, k) => el.myprop = appData[k];
+
+	myApp.nestedRepeat('.d', appData, 
+		f3
+	)
+		('.s', f1)
+		('.q', (el, k, data) => data[k])
+		('.p', f2)();
 }

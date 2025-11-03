@@ -324,12 +324,67 @@ self.App = (() => {
 			};
 		}
 
+		nestedRepeat = (...args) => {
+			var listParam = [];
+			var stack = [];
+			var defFn = (el, k, data) => data[k];
+
+			var exec = () => {
+				var itm = listParam[0];
+				stack[0] = (el, data) => repeat(
+					el.querySelector(itm[0]),
+					data,
+					(e, k) => itm[1](e, k, data),
+					...(itm.slice(2))
+				);
+
+				listParam.forEach((itm, i) => {
+					if (i === 0) return;
+
+					stack[i] = (afEl, data) => {
+						repeat(
+							afEl.querySelector(itm[0]),
+							data,
+							(el, k) => {
+								const newData = (itm[1] || defFn)(el, k, data);
+								stack[i - 1](el, newData);
+							},
+							...(itm.slice(2))
+						);
+					}
+				});
+				
+				var afterStack = args[2];
+				args[2] = (el, k) => {
+					const newData = afterStack(el, k);
+					stack[stack.length - 1](el, newData);
+				};
+				
+				repeat.apply(null, args);
+			};
+
+			var nested = (...a) => {
+				if (a.length)
+					listParam.unshift(a);
+				else
+					return exec();
+
+				return (...b) => {
+					needStoredGetterFlg = true;
+					return nested(...b);
+				};
+			};
+			
+			return nested;
+		}
+
 		return extInterface = Object.create(null, {
 			buildData: {value: obj => rootObj = buildData(obj)},
 			unbind: {value: _unbind},
 			xrBind: {value: xrBind},
 			bind: {get: () => needStoredGetterFlg = true && bind},
 			repeat: {get: () => needStoredGetterFlg = true && repeat},
+			nestedRepeat: {get: () => needStoredGetterFlg = true && nestedRepeat},
 			unbindObj: {get: () => needStoredGetterFlg = true && _unbindObj},
 		});
 	};
