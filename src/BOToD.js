@@ -9,6 +9,9 @@ self.App = (() => {
 		var EVENT_TYPE = settingBits & 0b1 ? 'input' : 'change';
 		var BINDING_PROPERTY = settingBits & 0b10 ? 'textContent' : 'value';
 
+		globalHandler = (globalHandler) || ((el, data, key) => el[BINDING_PROPERTY] = data[key]);
+		globalCallback = (globalCallback) || ((el, cop) => cop.obj[cop.prop] = el[BINDING_PROPERTY]);
+
 		var currentObjProp = null;
 
 		var el2handlerBind	= new WeakMap();
@@ -78,7 +81,7 @@ self.App = (() => {
 		var resetEl = elm => {
 			if (globalHandler) globalHandler(elm, [null], 0);
 
-				elm[BINDING_PROPERTY] = null;
+			elm[BINDING_PROPERTY] = null;
 
 			const group = El2group.get(elm);
 			if (group) {
@@ -196,7 +199,7 @@ self.App = (() => {
 						else if ((typeof(val) === 'object') && (!val[_IS_PROXY])) {
 							this.nextCode = (matRow[prop]) || (matRow[prop] = this.nextCode << 1);
 							val = buildData(val, ((this.nextCode << 1) | 1), deepLvl + 1, prnts);
-							if (prnts[deepLvl] !== prop) prnts[prnts] = prop;
+							if (prnts[deepLvl] !== prop) prnts[deepLvl] = prop;
 						}
 					}
 
@@ -225,13 +228,10 @@ self.App = (() => {
 		}
 
 		bind = (elSel, val, key) => {
-			const callback = (globalCallback) || ((el, cop) => cop.obj[cop.prop] = el[BINDING_PROPERTY]);
 			var parents = Array.from(currentObjProp.obj[_PRNTS]), prp = currentObjProp.prop;
-			const handler = globalHandler ?
-				el => globalHandler( el, parents.reduce((acc, p) => acc[p], rootObj), prp ) :
-				((el, k) => el[BINDING_PROPERTY] = parents.reduce((acc, p) => acc[p], rootObj)[k || prp]);
+			const handler = (el, k) => globalHandler( el, parents.reduce((acc, p) => acc[p], rootObj), k || prp );
 
-			return extInterface.xrBind(elSel, handler, callback, key, true, 0);
+			return extInterface.xrBind(elSel, handler, globalCallback, key, true, 0);
 		}
 
 		xrBind = (el, handler, callback, rptKey, __needCurrObj = false, stateCall) => {
@@ -261,15 +261,18 @@ self.App = (() => {
 		repeat = (el, iterObj, bindHandle, xrBindCallbackOrFlag = true, storyCall) => {
 			var elm = getEl(el);
 
+			if (bindHandle === true)
+				bindHandle = globalHandler;
+
 			needStoredGetterFlg = true;
 			const parents = (storyCall) || (iterObj === rootObj) || (!currentObjProp) ? iterObj : Array.from(currentObjProp.obj[_PRNTS]);
-			const iter = (storyCall) && !(iterObj === rootObj) && currentObjProp ? parents.reduce((acc, p) => acc[p], rootObj) : iterObj;
+			const iter = (storyCall) || ((iterObj !== rootObj) && currentObjProp) ? parents.reduce((acc, p) => acc[p], rootObj) : iterObj;
 			needStoredGetterFlg = false;
 
 			var group = Object.create(null);
 			var updGroup = El2group.get(elm) || Object.create(null);
 
-			if ((currentObjProp) && (xrBindCallbackOrFlag != null)) {
+			if ((currentObjProp) && (xrBindCallbackOrFlag != null) && bindHandle) {
 				if (!(storyCall && repeatStore[iter[_MASK]]))	
 					addRepeat(extInterface.repeat.bind(null, elm, parents, bindHandle, xrBindCallbackOrFlag), elm, group);
 
@@ -290,20 +293,14 @@ self.App = (() => {
 
 					fragment.append(newEl);
 
-					if (xrBindCallbackOrFlag) {
+					if ((xrBindCallbackOrFlag) || (xrBindCallbackOrFlag === null)) {
 						extInterface.xrBind(
 							newEl,
-							bindHandle || (globalHandler ? globalHandler.bind(null, newEl, iter, key) : el => el[BINDING_PROPERTY] = iter[key]),
-							xrBindCallbackOrFlag instanceof Function ? xrBindCallbackOrFlag : xrBindCallbackOrFlag === null ? null : (globalCallback) || ((el, cop) => cop.obj[cop.prop] = el[BINDING_PROPERTY]),
+							bindHandle,
+							xrBindCallbackOrFlag instanceof Function ? xrBindCallbackOrFlag : xrBindCallbackOrFlag === null ? null : globalCallback,
 							key
 						);
-					}
-
-					if (xrBindCallbackOrFlag instanceof Function)
-						extInterface.xrBind(newEl, bindHandle, xrBindCallbackOrFlag, key, false);
-					else if (xrBindCallbackOrFlag)
-						extInterface.xrBind(newEl, bindHandle || (globalHandler ? globalHandler.bind(null, newEl, iter, key) : el => el[BINDING_PROPERTY] = iter[key]), null, key);
-					else if (bindHandle)
+					} else if (bindHandle)
 						bindHandle(newEl, key);
 				} else
 					group[key] = updGroup[key];
