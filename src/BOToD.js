@@ -258,6 +258,7 @@ self.App = (() => {
 			}
 		}
 
+		var frmNested = false;
 		repeat = (el, iterObj, bindHandle, xrBindCallbackOrFlag = true, storyCall) => {
 			var elm = getEl(el);
 
@@ -265,8 +266,8 @@ self.App = (() => {
 				bindHandle = globalHandler;
 
 			needStoredGetterFlg = true;
-			const parents = (storyCall) || (iterObj === rootObj) || (!currentObjProp) ? iterObj : Array.from(currentObjProp.obj[_PRNTS]);
-			const iter = (storyCall) || ((iterObj !== rootObj) && currentObjProp) ? parents.reduce((acc, p) => acc[p], rootObj) : iterObj;
+			const parents = (storyCall) || (iterObj === rootObj) || (!currentObjProp) || frmNested ? iterObj : Array.from(currentObjProp.obj[_PRNTS]);
+			const iter = (storyCall) || ((iterObj !== rootObj) && currentObjProp && !frmNested) ? parents.reduce((acc, p) => acc[p], rootObj) : iterObj;
 			needStoredGetterFlg = false;
 
 			var group = Object.create(null);
@@ -330,6 +331,7 @@ self.App = (() => {
 			var defFn = (el, k, data) => data[k];
 
 			var exec = () => {
+				frmNested = true;
 				var itm = listParam[0];
 				stack[0] = (el, data) => repeat(
 					el.querySelector(itm[0]),
@@ -356,11 +358,12 @@ self.App = (() => {
 				
 				var afterStack = args[2];
 				args[2] = (el, k) => {
-					const newData = afterStack(el, k);
+					const newData = afterStack(el, k, args[1]);
 					stack[stack.length - 1](el, newData);
 				};
 				
 				repeat.apply(null, args);
+				frmNested = false;
 			};
 
 			var nested = (...a) => {

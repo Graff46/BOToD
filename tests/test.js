@@ -99,36 +99,14 @@ async function runTestObject() {
 }
 
 const nestedTest = () => {
-	document.body.innerHTML += '<div class="d"><span class="s"><div class="q"> <p class="p"></p> </div></span></div>';
-
 	const appData = myApp.buildData({
-		one: {
-			11: {
-				111: {
-					1111: 1111,
-					1112: 1112,
-				}
-			},
-			12: {
-				121: {
-					1211: 1211,
-					1212: 1212,
-				}
-			},
+		cars: {
+			lada: ['kalina', 'propra', 'vesta'],
+			gaz: ['GAZelle', 'volga'],
 		},
-		two: {
-			21: {
-				212: {
-					2121: 2121,
-					2122: 2122,
-				}
-			},
-			22: {
-				222: {
-					2221: 2221,
-					2222: 2222,
-				}
-			},
+		planer: {
+			Tu: [134, 144],
+			Il: [86, 2],
 		},
 	});
 
@@ -145,14 +123,13 @@ const nestedTest = () => {
 		)
 	)*/
 
-	const f1 = (el, k, data) => el.myprop2 = data[k];
-	const f2 = (el, k, data) => el.textContent = data[k];
-	const f3 = (el, k) => el.myprop = appData[k];
+	const f1 = (el, k, data) => el.textContent = data[k];
+	const f2 = (el, k, data) => el.insertAdjacentText('afterbegin', k) || data[k];
+	const f3 = (el, k, data) => (el.querySelector('span').textContent = k) && data[k];
 
-	myApp.nestedRepeat('.d', appData, 
-		f3
-	)
-		('.s', f1)
-		('.q', (el, k, data) => data[k])
-		('.p', f2)();
+	myApp.nestedRepeat('.types', appData, f2)
+		('.mark', f2)
+		('.model', f1)();
 }
+
+nestedTest()
