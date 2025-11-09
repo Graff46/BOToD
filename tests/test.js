@@ -106,7 +106,7 @@ const nestedTest = () => {
 		},
 		planer: {
 			Tu: [134, 144],
-			Il: [86, 2],
+			Il: [86, '2-штурмовик'],
 		},
 	});
 
@@ -123,13 +123,12 @@ const nestedTest = () => {
 		)
 	)*/
 
-	const f1 = (el, k, data) => el.textContent = data[k];
-	const f2 = (el, k, data) => el.insertAdjacentText('afterbegin', k) || data[k];
-	const f3 = (el, k, data) => (el.querySelector('span').textContent = k) && data[k];
+	const f1 = (el, k, data) => el.prepend(k) || data[k];
+	const f2 = (el, k, data) => el.prepend(data[k]);
 
-	myApp.nestedRepeat('.types', appData, f2)
-		('.mark', f2)
-		('.model', f1)();
+	var h = App.DOMBuilder();
+	myApp.nestedRepeat('.types', appData, f1)
+	('.mark', f1)(h.ul({class: 'end'}), f2)();
 }
 
-nestedTest()
+nestedTest();

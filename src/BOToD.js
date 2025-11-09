@@ -1,11 +1,15 @@
 self.App = (() => {
 	var getEl = el => (el instanceof Element) ? el : document.querySelector(el);
+	var parseSelector = (el, selector) => selector.isEl ? 
+		el.insertAdjacentElement('beforeend', selector.getEl[0].cloneNode(true)):
+		el.querySelector(selector);
+
 	var _IS_PROXY = Symbol('isProxy');
 	var _MASK = Symbol('mask');
 	var _DEEP = Symbol('deep');
 	var _PRNTS = Symbol('prnts');
 
-	return (settingBits = 0, globalHandler, globalCallback) => {
+	var Core = (settingBits = 0, globalHandler, globalCallback) => {
 		var EVENT_TYPE = settingBits & 0b1 ? 'input' : 'change';
 		var BINDING_PROPERTY = settingBits & 0b10 ? 'textContent' : 'value';
 
@@ -227,14 +231,14 @@ self.App = (() => {
 			});
 		}
 
-		bind = (elSel, val, key) => {
+		var bind = (elSel, val, key) => {
 			var parents = Array.from(currentObjProp.obj[_PRNTS]), prp = currentObjProp.prop;
 			const handler = (el, k) => globalHandler( el, parents.reduce((acc, p) => acc[p], rootObj), k || prp );
 
 			return extInterface.xrBind(elSel, handler, globalCallback, key, true, 0);
 		}
 
-		xrBind = (el, handler, callback, rptKey, __needCurrObj = false, stateCall) => {
+		var xrBind = (el, handler, callback, rptKey, __needCurrObj = false, stateCall) => {
 			const elm = getEl(el);
 
 			needStoredGetterFlg = stateCall !== 0;
@@ -259,7 +263,7 @@ self.App = (() => {
 		}
 
 		var frmNested = false;
-		repeat = (el, iterObj, bindHandle, xrBindCallbackOrFlag = true, storyCall) => {
+		var repeat = (el, iterObj, bindHandle, xrBindCallbackOrFlag = true, storyCall) => {
 			var elm = getEl(el);
 
 			if (bindHandle === true)
@@ -325,59 +329,60 @@ self.App = (() => {
 			};
 		}
 
-		nestedRepeat = (...args) => {
-			var listParam = [];
-			var stack = [];
+		var handlerNestedRepeat = (listParam, args) => {
 			var defFn = (el, k, data) => data[k];
+			var stack = [];
+			
+			frmNested = true;
+			var itm = listParam[0];
+			stack[0] = (el, data) => repeat(
+				parseSelector(el, itm[0]),
+				data,
+				(e, k) => itm[1](e, k, data),
+				...(itm.slice(2))
+			);
 
-			var exec = () => {
-				frmNested = true;
-				var itm = listParam[0];
-				stack[0] = (el, data) => repeat(
-					el.querySelector(itm[0]),
-					data,
-					(e, k) => itm[1](e, k, data),
-					...(itm.slice(2))
-				);
+			listParam.forEach((itm, i) => {
+				if (i === 0) return;
 
-				listParam.forEach((itm, i) => {
-					if (i === 0) return;
-
-					stack[i] = (afEl, data) => {
-						repeat(
-							afEl.querySelector(itm[0]),
-							data,
-							(el, k) => {
-								const newData = (itm[1] || defFn)(el, k, data);
-								stack[i - 1](el, newData);
-							},
-							...(itm.slice(2))
-						);
-					}
-				});
-				
-				var afterStack = args[2];
-				args[2] = (el, k) => {
-					const newData = afterStack(el, k, args[1]);
-					stack[stack.length - 1](el, newData);
-				};
-				
-				repeat.apply(null, args);
-				frmNested = false;
+				stack[i] = (afEl, data) => {
+					repeat(
+						parseSelector(afEl, itm[0]),
+						data,
+						(el, k) => {
+							const newData = (itm[1] || defFn)(el, k, data);
+							stack[i - 1](el, newData);
+						},
+						...(itm.slice(2))
+					);
+				}
+			});
+			
+			var afterStack = args[2];
+			args[2] = (el, k) => {
+				const newData = afterStack(el, k, args[1]);
+				stack[stack.length - 1](el, newData);
 			};
+			
+			repeat.apply(null, args);
+			frmNested = false;
+		};
+
+		var nestedRepeat = (...args) => {
+			var listParam = [];
 
 			var nested = (...a) => {
 				if (a.length)
 					listParam.unshift(a);
 				else
-					return exec();
+					return handlerNestedRepeat(listParam, args);
 
 				return (...b) => {
 					needStoredGetterFlg = true;
 					return nested(...b);
 				};
 			};
-			
+
 			return nested;
 		}
 
@@ -391,7 +396,39 @@ self.App = (() => {
 			unbindObj: {get: () => needStoredGetterFlg = true && _unbindObj},
 		});
 	};
-})();
 
-App.eventTypeInput = 0b1;
-App.textContentBinding = 0b10;
+	Core.eventTypeInput = 0b1;
+	Core.textContentBinding = 0b10;
+	Core.DOMBuilder = (docFragment, lastEl) => {
+		return new Proxy((...args) => {
+			if (!args[0].isEl) {
+				var props = args.shift();
+				for (const k in props)
+					lastEl.setAttribute(k, props[k]);
+			}
+
+			if (args.length)
+				args.shift().getEl.forEach(el => lastEl.append(el.cloneNode(true)));
+
+			return Core.DOMBuilder(docFragment);
+		}, {
+			get: (target, prop, receiver) => {
+				if (typeof prop === 'string') {
+					if (prop === 'isEl') return true;
+					if (prop === 'getEl') return docFragment.childNodes;
+
+					const newEl = document.createElement(prop);
+					const df = docFragment || document.createDocumentFragment();
+					df.append(newEl);
+
+					return Core.DOMBuilder(df, newEl);
+				} else
+					return Reflect.get(target, prop, receiver);
+			},
+
+			set: () => {throw new SyntaxError("Don't set values!")},
+		});
+	}
+
+	return Core;
+})();
