@@ -13,7 +13,7 @@ self.App = (() => {
 		var EVENT_TYPE = settingBits & 0b1 ? 'input' : 'change';
 		var BINDING_PROPERTY = settingBits & 0b10 ? 'textContent' : 'value';
 
-		globalHandler = (globalHandler) || ((el, data, key) => el[BINDING_PROPERTY] = data[key]);
+		globalHandler = (globalHandler) || ((el, key, data) => el[BINDING_PROPERTY] = data[key]);
 		globalCallback = (globalCallback) || ((el, cop) => cop.obj[cop.prop] = el[BINDING_PROPERTY]);
 
 		var currentObjProp = null;
@@ -35,6 +35,8 @@ self.App = (() => {
 
 		var extInterface = null;
 		var rootObj = null;
+
+		var fromParents = parents => parents.reduce((acc, p) => acc[p], rootObj);
 
 		var _eachBit = (code, collector, el, needAddSelf) => {
 			var insert = bcode => (collector[bcode] || (collector[bcode] = new Set())).add(el);
@@ -233,9 +235,9 @@ self.App = (() => {
 
 		var bind = (elSel, val, key) => {
 			var parents = Array.from(currentObjProp.obj[_PRNTS]), prp = currentObjProp.prop;
-			const handler = (el, k) => globalHandler( el, parents.reduce((acc, p) => acc[p], rootObj), k || prp );
+			const handler = (el, k) => globalHandler(el, k || prp, fromParents(parents));
 
-			return extInterface.xrBind(elSel, handler, globalCallback, key, true, 0);
+			return xrBind(elSel, handler, globalCallback, key, true, 0);
 		}
 
 		var xrBind = (el, handler, callback, rptKey, __needCurrObj = false, stateCall) => {
@@ -252,7 +254,7 @@ self.App = (() => {
 			}
 
 			if ( (currentObjProp) && !(stateCall && bindUpd[currentObjProp.mask]) )
-				addBind(handler.bind(null, elm, rptKey), extInterface.xrBind.bind(null, elm, handler, callback, rptKey, __needCurrObj), elm);
+				addBind(handler.bind(null, elm, rptKey), xrBind.bind(null, elm, handler, callback, rptKey, __needCurrObj), elm);
 
 			if (tmp = el2eventHandler.get(elm)) elm.removeEventListener(EVENT_TYPE, tmp);
 			if (callback) {
@@ -271,7 +273,7 @@ self.App = (() => {
 
 			needStoredGetterFlg = true;
 			const parents = (storyCall) || (iterObj === rootObj) || (!currentObjProp) || frmNested ? iterObj : Array.from(currentObjProp.obj[_PRNTS]);
-			const iter = (storyCall) || ((iterObj !== rootObj) && currentObjProp && !frmNested) ? parents.reduce((acc, p) => acc[p], rootObj) : iterObj;
+			const iter = (storyCall) || ((iterObj !== rootObj) && currentObjProp && !frmNested) ? fromParents(parents) : iterObj;
 			needStoredGetterFlg = false;
 
 			var group = Object.create(null);
@@ -285,9 +287,7 @@ self.App = (() => {
 				El2group.set(elm, group);
 			}
 
-			var newEl = null
-			var fragment = new DocumentFragment();
-
+			var newEl = null;
 			for (const key in iter) {
 				if (!(key in updGroup)) {
 					newEl = elm.cloneNode(true);
@@ -296,14 +296,14 @@ self.App = (() => {
 
 					group[key] = newEl;
 
-					fragment.append(newEl);
+					elm.before(newEl);
 
 					if ((xrBindCallbackOrFlag) || (xrBindCallbackOrFlag === null)) {
-						extInterface.xrBind(
+						xrBind(
 							newEl,
-							bindHandle,
+							(el, k) => bindHandle(el, k, fromParents(iter[_PRNTS])),
 							xrBindCallbackOrFlag instanceof Function ? xrBindCallbackOrFlag : xrBindCallbackOrFlag === null ? null : globalCallback,
-							key
+							key,
 						);
 					} else if (bindHandle)
 						bindHandle(newEl, key);
@@ -313,13 +313,11 @@ self.App = (() => {
 				delete updGroup[key];
 			}
 
-			if (fragment.childElementCount) {
-				elm.hidden = true;
-				elm.after(fragment);
-			}
+			if (newEl) elm.hidden = true;
 
 			for (let k in updGroup) {
-				fragment.append(tmp = updGroup[k]);
+				tmp = updGroup[k];
+				tmp.remove();
 				
 				tmp.removeEventListener(EVENT_TYPE, el2eventHandler.get(tmp));
 				el2eventHandler.delete(tmp);
