@@ -233,7 +233,7 @@ self.App = (() => {
 			});
 		}
 
-		var bind = (elSel, val, key) => {
+		const bind = (elSel, val, key) => {
 			var parents = Array.from(currentObjProp.obj[_PRNTS]), prp = currentObjProp.prop;
 			const handler = (el, k) => globalHandler(el, k || prp, fromParents(parents));
 
@@ -257,6 +257,7 @@ self.App = (() => {
 				addBind(handler.bind(null, elm, rptKey), xrBind.bind(null, elm, handler, callback, rptKey, __needCurrObj), elm);
 
 			if (tmp = el2eventHandler.get(elm)) elm.removeEventListener(EVENT_TYPE, tmp);
+
 			if (callback) {
 				const eventHandler = event => callback(event.currentTarget, cObjProp || rptKey);
 				el2eventHandler.set(elm, eventHandler);
@@ -366,7 +367,7 @@ self.App = (() => {
 			frmNested = false;
 		};
 
-		var nestedRepeat = (...args) => {
+		const nestedRepeat = (...args) => {
 			var listParam = [];
 
 			var nested = (...a) => {
@@ -384,29 +385,33 @@ self.App = (() => {
 			return nested;
 		}
 
-		return extInterface = Object.create(null, {
-			buildData: {value: obj => rootObj = buildData(obj)},
-			unbind: {value: _unbind},
-			xrBind: {value: xrBind},
+		extInterface = Object.create(null, {
 			bind: {get: () => needStoredGetterFlg = true && bind},
 			repeat: {get: () => needStoredGetterFlg = true && repeat},
 			nestedRepeat: {get: () => needStoredGetterFlg = true && nestedRepeat},
 			unbindObj: {get: () => needStoredGetterFlg = true && _unbindObj},
 		});
+
+		extInterface.unbind = _unbind;
+		extInterface.xrBind = xrBind;
+		extInterface.buildData = obj => rootObj = buildData(obj);
+
+		return extInterface;
 	};
 
 	Core.eventTypeInput = 0b1;
 	Core.textContentBinding = 0b10;
+	Core.$el = sel => getEl(sel);
+
 	Core.DOMBuilder = (docFragment, lastEl) => {
 		return new Proxy((...args) => {
 			if (!args[0].isEl) {
-				var props = args.shift();
+				const props = args.shift();
 				for (const k in props)
 					lastEl.setAttribute(k, props[k]);
 			}
 
-			if (args.length)
-				args.shift().getEl.forEach(el => lastEl.append(el.cloneNode(true)));
+			if (args.length) args.shift().getEl.forEach(el => lastEl.append(el.cloneNode(true)));
 
 			return Core.DOMBuilder(docFragment);
 		}, {

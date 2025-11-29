@@ -128,7 +128,9 @@ const nestedTest = () => {
 
 	var h = App.DOMBuilder();
 	myApp.nestedRepeat('.types', appData, f1)
-	('.mark', f1)(h.ul({class: 'end'}), f2)();
+	(h.ul({class: 'mark'}), f1)(h.ul({class: 'end'}), f2)();
+
+	//setTimeout(() => appData.cars.gaz = ['5'], 2000);
 }
 
-nestedTest();
+//nestedTest();
