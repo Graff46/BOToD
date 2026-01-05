@@ -35,7 +35,7 @@ const nestedLoops = () => {
 		'.i3',
 		appData,
 		(el, k) => myApp.repeat(el, appData[k],
-				(ell, kk, data) => ell.value = appData[k][kk].l1.m1),
+			(ell, kk, data) => ell.value = appData[k][kk].l1.m1),
 		false
 	);
 
@@ -90,10 +90,47 @@ async function runTestObject() {
 	}
 	console.timeEnd(1)
 
-	setTimeout(() => { yy.k1 = {l1: {m1: 55}}; }, 2000);
+	setTimeout(() => { yy.k1 = {l1: {m1: 58}}; }, 2000);
 	setTimeout(() => { yy.k1.l1.m111 = 3;/* myApp.unbind(`.i33`);*/}, 4000);
 	setTimeout(() => {yy.k1.l1 = {m1: 65, m11: 31, m111: 4};}, 6000);
 	setTimeout(() => {delete yy.k1; tt=1 }, 8000);
 	setTimeout(() => {yy.k1 = {l1: {m1: 77, m11: 88}}; }, 10_000);
 	setTimeout(() => yy.k1.l1.m1 = 100, 12_000);
 }
+
+const nestedTest = () => {
+	const appData = myApp.buildData({
+		cars: {
+			lada: ['kalina', 'propra', 'vesta'],
+			gaz: ['GAZelle', 'volga'],
+		},
+		planer: {
+			Tu: [134, 144],
+			Il: [86, '2-штурмовик'],
+		},
+	});
+
+	/*myApp.repeat(
+		'.d',
+		appData, 
+		(el, k) => myApp.repeat(
+			el.querySelector('.s'),
+			appData[k],
+			(el2, k2) => myApp.repeat(
+				el2.querySelector('.p'),
+				appData[k][k2],
+				(el3, k3)=> el3.textContent = appData[k][k2][k3]) 
+		)
+	)*/
+
+	const f1 = (el, k, data) => el.prepend(k) || data[k];
+	const f2 = (el, k, data) => el.prepend(data[k]);
+
+	var h = App.DOMBuilder();
+	myApp.nestedRepeat('.types', appData, f1)
+	(h.ul({class: 'mark'}), f1)(h.ul({class: 'end'}), f2)();
+
+	//setTimeout(() => appData.cars.gaz = ['5'], 2000);
+}
+
+//nestedTest();
