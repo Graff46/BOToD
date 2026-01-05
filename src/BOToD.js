@@ -160,14 +160,18 @@ self.App = (() => {
 		var buildData = (obj, code = 1, deepLvl = 0, prnts = [], afProp) => {
 			var matRow = matrix[deepLvl] = Object.create(null);
 
-			const cond = prnts[deepLvl - 1] != afProp;  
-			prnts = (prnts[deepLvl - 1]) && cond ? Array.from(prnts) : prnts;
-			if (afProp && cond) prnts[deepLvl - 1] = afProp;
+			if (deepLvl === 0)
+				prnts = [obj];
+			else {
+				const cond = prnts[deepLvl - 1] != afProp;  
+				prnts = (prnts[deepLvl - 1]) && cond ? Array.from(prnts) : prnts;
+				if (afProp && cond) prnts[deepLvl - 1] = afProp;
+			}
 
 			return new Proxy(obj, {
 				mask: code,
 				nextCode: code,
-				get parents() {return prnts.slice(0, deepLvl + 1)},
+				get parents() {return deepLvl === 0 ? prnts : prnts.slice(0, deepLvl)},
 
 				get: function(target, prop, receiver) {
 					if (prop === _IS_PROXY) return true;

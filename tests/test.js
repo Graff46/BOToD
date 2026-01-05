@@ -109,6 +109,7 @@ const nestedTest = () => {
 			Il: [86, '2-штурмовик'],
 		},
 	});
+console.log(appData);
 
 	/*myApp.repeat(
 		'.d',
@@ -133,4 +134,4 @@ const nestedTest = () => {
 	//setTimeout(() => appData.cars.gaz = ['5'], 2000);
 }
 
-//nestedTest();
+nestedTest();
