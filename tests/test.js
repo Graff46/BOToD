@@ -131,7 +131,7 @@ console.log(appData);
 	myApp.nestedRepeat('.types', appData, f1)
 	(h.ul({class: 'mark'}), f1)(h.ul({class: 'end'}), f2)();
 
-	//setTimeout(() => appData.cars.gaz = ['5'], 2000);
+	btest.onclick = () =>  appData.cars.gaz = ['5'];
 }
 
 nestedTest();
