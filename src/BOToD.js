@@ -160,9 +160,7 @@ self.App = (() => {
 		var buildData = (obj, code = 1, deepLvl = 0, prnts = [], afProp) => {
 			var matRow = matrix[deepLvl] = Object.create(null);
 
-			if (deepLvl === 0)
-				prnts = [obj];
-			else {
+			if (deepLvl !== 0) {
 				const cond = prnts[deepLvl - 1] != afProp;  
 				prnts = (prnts[deepLvl - 1]) && cond ? Array.from(prnts) : prnts;
 				if (afProp && cond) prnts[deepLvl - 1] = afProp;
@@ -218,12 +216,12 @@ self.App = (() => {
 
 					var storebinds = null, storeRepeats = null;
 
+					if (storeRepeats = repeatStore[code]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el)) && tmp(true));
+
 					if (storebinds = bindReset[code]) storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && tmp.res(true));
 
 					if ((storebinds = bindUpd[code]) && (storebinds = storebinds[prop]))
 						storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && tmp.upd(true));
-
-					if (storeRepeats = repeatStore[code]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el)) && tmp(true));
 
 					return result;
 				},
@@ -270,23 +268,22 @@ self.App = (() => {
 		}
 
 		var frmNested = false;
-		var repeat = (el, iterObj, bindHandle, xrBindCallbackOrFlag = true, nested, storyCall) => {
+		var repeat = (el, iterObj, bindHandle, xrBindCallbackOrFlag = true, prnts, storyCall) => {
 			var elm = getEl(el);
 
 			if (bindHandle === true) bindHandle = globalHandler;
 
 			needStoredGetterFlg = true;
-			const parents = (storyCall) || (iterObj === rootObj) || (!currentObjProp) || frmNested ? iterObj : Array.from(currentObjProp.obj[_PRNTS]);
-			const iter = ((storyCall) || ((iterObj !== rootObj) && currentObjProp && !frmNested)) && !nested ? fromParents(parents) : iterObj;
+			const parents = prnts ? prnts : Array.from((currentObjProp ? currentObjProp.obj : iterObj)[_PRNTS]);
+			const iter = prnts ? fromParents(prnts) : iterObj;
 			needStoredGetterFlg = false;
 
 			const group = Object.create(null);
 			const updGroup = El2group.get(elm) || Object.create(null);
-console.log(!nested , currentObjProp);
 
-			if ((1) && (xrBindCallbackOrFlag != null) && bindHandle) {
-				if (!nested && !(storyCall && repeatStore[iter[_MASK]]))	
-					addRepeat(extInterface.repeat.bind(null, elm, parents, bindHandle, xrBindCallbackOrFlag, nested), elm, group);
+			if ((xrBindCallbackOrFlag != null) && bindHandle) {
+				if (!(storyCall || repeatStore[iter[_MASK]]))	
+					addRepeat(extInterface.repeat.bind(null, elm, null, bindHandle, xrBindCallbackOrFlag, parents), elm, group);
 
 				currentObjProp = null;
 				El2group.set(elm, group);
@@ -343,6 +340,7 @@ console.log(!nested , currentObjProp);
 				data,
 				(e, k, dt) => itm[1](e, k, dt),
 				itm[2],
+				undefined,
 				true,
 			);
 
@@ -358,6 +356,7 @@ console.log(!nested , currentObjProp);
 							stack[i - 1](el, newData);
 						},
 						itm[2],
+						undefined,
 						true,
 					);
 				}
@@ -368,7 +367,6 @@ console.log(!nested , currentObjProp);
 				const newData = afterStack(el, k, args[1]);
 				stack[stack.length - 1](el, newData);
 			};
-			//args[4] = true;
 			
 			repeat.apply(null, args);
 			frmNested = false;
