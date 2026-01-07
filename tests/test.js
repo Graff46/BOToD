@@ -68,7 +68,7 @@ async function runTestArray() {
 		myApp.bind(`.i1${i}`, y.k1.l1[0]);
 		myApp.repeat(`.i2${i}`, y.k1.l1, true);
 	}
-	console.timeEnd(1)
+	console.timeEnd(1);
 
 	setTimeout(() => { y.k1 = {l1:[6, 8]}; }, 2000);
 	setTimeout(() => { y.k1.l1[3] = 11; myApp.unbind(`.i33`);}, 4000);
@@ -109,6 +109,7 @@ const nestedTest = () => {
 			Il: [86, '2-штурмовик'],
 		},
 	});
+console.log(appData);
 
 	/*myApp.repeat(
 		'.d',
@@ -130,7 +131,7 @@ const nestedTest = () => {
 	myApp.nestedRepeat('.types', appData, f1)
 	(h.ul({class: 'mark'}), f1)(h.ul({class: 'end'}), f2)();
 
-	//setTimeout(() => appData.cars.gaz = ['5'], 2000);
+	btest.onclick = () => appData.cars.gaz = ['5'];
 }
 
 //nestedTest();
