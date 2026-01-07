@@ -68,7 +68,7 @@ async function runTestArray() {
 		myApp.bind(`.i1${i}`, y.k1.l1[0]);
 		myApp.repeat(`.i2${i}`, y.k1.l1, true);
 	}
-	console.timeEnd(1)
+	console.timeEnd(1);
 
 	setTimeout(() => { y.k1 = {l1:[6, 8]}; }, 2000);
 	setTimeout(() => { y.k1.l1[3] = 11; myApp.unbind(`.i33`);}, 4000);

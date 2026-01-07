@@ -27,8 +27,6 @@ self.App = (() => {
 		var bindReset		= Object.create(null);
 		var bindUpd			= Object.create(null);
 
-		var obj2prox		= new WeakMap();
-
 		var tmp = null;
 		var maxCode = 1;
 		var matrix = Object.create(null);
@@ -39,7 +37,7 @@ self.App = (() => {
 		var fromParents = parents => parents.reduce((acc, p) => acc[p], rootObj);
 
 		var _eachBit = (code, collector, el, needAddSelf) => {
-			var insert = bcode => (collector[bcode] || (collector[bcode] = new Set())).add(el);
+			const insert = bcode => (collector[bcode] || (collector[bcode] = new Set())).add(el);
 			needAddSelf && insert(code);
 
 			var nullCnt = 0;
@@ -156,6 +154,7 @@ self.App = (() => {
 
 		var needStoredGetterFlg = false;
 		var skipProxySetFlg = false;
+		var fromRepeat = false;
 
 		var buildData = (obj, code = 1, deepLvl = 0, prnts = [], afProp) => {
 			var matRow = matrix[deepLvl] = Object.create(null);
@@ -185,8 +184,7 @@ self.App = (() => {
 						skipProxySetFlg = false;
 
 						maxCode = Math.max(maxCode, childCode);
-					} else if (!obj2prox.has(target))
-						obj2prox.set(target, receiver);
+					}
 
 					if (needStoredGetterFlg) {
 						currentObjProp = Object.create(null);
@@ -194,6 +192,12 @@ self.App = (() => {
 						currentObjProp.prop	= prop;
 						currentObjProp.obj = receiver;
 						currentObjProp.childMask = childCode;
+
+						if (fromRepeat) {
+							needStoredGetterFlg = false;
+							currentObjProp.val = receiver[prop];
+							needStoredGetterFlg = true;
+						}
 						Object.freeze(currentObjProp);
 					}
 
@@ -214,7 +218,7 @@ self.App = (() => {
 					const result = Reflect.set(target, prop, val, receiver);
 					if (skipProxySetFlg) return result;
 
-					var storebinds = null, storeRepeats = null;
+					let storebinds = null, storeRepeats = null;
 
 					if (storeRepeats = repeatStore[code]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el)) && tmp(true));
 
@@ -267,23 +271,23 @@ self.App = (() => {
 			}
 		}
 
-		var frmNested = false;
-		var repeat = (el, iterObj, bindHandle, xrBindCallbackOrFlag = true, prnts, storyCall) => {
+		var repeat = (el, iterObj, bindHandle, xrBindCallbackOrFlag = true, prnts, nested, storyCall) => {
 			var elm = getEl(el);
 
 			if (bindHandle === true) bindHandle = globalHandler;
 
 			needStoredGetterFlg = true;
-			const parents = prnts ? prnts : Array.from((currentObjProp ? currentObjProp.obj : iterObj)[_PRNTS]);
-			const iter = prnts ? fromParents(prnts) : iterObj;
+			const parents = prnts ? prnts : Array.from((iterObj || currentObjProp.val)[_PRNTS]);
+			const iter = prnts ? fromParents(prnts) : iterObj || fromParents(parents);
 			needStoredGetterFlg = false;
+			fromRepeat = false;
 
 			const group = Object.create(null);
 			const updGroup = El2group.get(elm) || Object.create(null);
 
 			if ((xrBindCallbackOrFlag != null) && bindHandle) {
-				if (!(storyCall || repeatStore[iter[_MASK]]))	
-					addRepeat(extInterface.repeat.bind(null, elm, null, bindHandle, xrBindCallbackOrFlag, parents), elm, group);
+				if (!(storyCall && repeatStore[iter[_MASK]]))	
+					addRepeat(extInterface.repeat.bind(null, elm, null, bindHandle, xrBindCallbackOrFlag, parents, nested), elm, group);
 
 				currentObjProp = null;
 				El2group.set(elm, group);
@@ -291,7 +295,7 @@ self.App = (() => {
 
 			var newEl = null;
 			for (const key in iter) {
-				if (!(key in updGroup)) {
+				if (nested || !(key in updGroup)) {
 					newEl = elm.cloneNode(true);
 					newEl.hidden = false;
 					newEl.setAttribute('__key', key);
@@ -312,12 +316,12 @@ self.App = (() => {
 				} else
 					group[key] = updGroup[key];
 
-				delete updGroup[key];
+				if (!nested) delete updGroup[key];
 			}
 
 			if (newEl) elm.hidden = true;
 
-			for (let k in updGroup) {
+			for (const k in updGroup) {
 				tmp = updGroup[k];
 				tmp.remove();
 				
@@ -333,7 +337,6 @@ self.App = (() => {
 			var defFn = (el, k, data) => data[k];
 			var stack = [];
 			
-			frmNested = true;
 			var itm = listParam[0];
 			stack[0] = (el, data) => repeat(
 				parseSelector(el, itm[0]),
@@ -342,24 +345,24 @@ self.App = (() => {
 				itm[2],
 				undefined,
 				true,
+				true,
 			);
 
 			listParam.forEach((itm, i) => {
 				if (i === 0) return;
 
-				stack[i] = (afEl, data) => {
-					repeat(
-						parseSelector(afEl, itm[0]),
-						data,
-						(el, k, dt) => {
-							const newData = (itm[1] || defFn)(el, k, dt);
-							stack[i - 1](el, newData);
-						},
-						itm[2],
-						undefined,
-						true,
-					);
-				}
+				stack[i] = (afEl, data) => repeat(
+					parseSelector(afEl, itm[0]),
+					data,
+					(el, k, dt) => {
+						const newData = (itm[1] || defFn)(el, k, dt);
+						stack[i - 1](el, newData);
+					},
+					itm[2],
+					undefined,
+					true,
+					true,
+				);
 			});
 			
 			var afterStack = args[2];
@@ -367,9 +370,9 @@ self.App = (() => {
 				const newData = afterStack(el, k, args[1]);
 				stack[stack.length - 1](el, newData);
 			};
+			args[5] = true;
 			
 			repeat.apply(null, args);
-			frmNested = false;
 		};
 
 		const nestedRepeat = (...args) => {
@@ -392,8 +395,8 @@ self.App = (() => {
 
 		extInterface = Object.create(null, {
 			bind: {get: () => needStoredGetterFlg = true && bind},
-			repeat: {get: () => needStoredGetterFlg = true && repeat},
-			nestedRepeat: {get: () => needStoredGetterFlg = true && nestedRepeat},
+			repeat: {get: () => fromRepeat = needStoredGetterFlg = true && repeat},
+			nestedRepeat: {get: () => fromRepeat = needStoredGetterFlg = true && nestedRepeat},
 			unbindObj: {get: () => needStoredGetterFlg = true && _unbindObj},
 		});
 
