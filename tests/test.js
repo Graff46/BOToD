@@ -24,10 +24,12 @@ const obj = {
 const myApp = App(App.eventTypeInput);
 const appData = myApp.buildData(obj);
 
+myApp.bind(`.i1`, appData.key.k1.l1.m11);
+/*
 const y = appData.key;
 const yy = appData.one;
 var tt;
-
+*/
 const nestedLoops = () => {
 	y.k1.l1 = {m1: 1, m11: 2,};
 
