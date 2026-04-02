@@ -54,21 +54,8 @@ self.App = (() => {
 
 		var fromParents = parents => parents.reduce((acc, p) => acc[p], rootObj);
 
-		var _eachBit = (code, collector, el) => {
-			const insert = bcode => (bcode >= Number.MAX_SAFE_INTEGER) ?
-				alert('Закончились числа!') : (collector[bcode] || (collector[bcode] = new Set())).add(el);
-
-			insert(code = code >> 1 << 1);
-			while(code > 0b10) {
-				if ((code >>= 1) % 2)
-					insert(code = code >> 1 << 1);
-			};
-		}
-
 		var addBind = (handler, resHandler, el, isKey) => {
 			if (isKey) el2fromRepeat.add(handler).add(resHandler);
-
-			var code = currentObjProp.mask;
 
 			let story = Object.create(null);
 			story.upd = handler;
@@ -79,24 +66,23 @@ self.App = (() => {
 			currentObjProp.sliceParents.forEach(prnt => (bindReset[prnt] || (bindReset[prnt] = new Set())).add(el));
 
 			const collc = currentObjProp.sliceParents[currentObjProp.sliceParents.length - 1];
-
+;
 			(tmp = bindUpd[collc]) || (tmp = bindUpd[collc] = Object.create(null));
 			(tmp[currentObjProp.prop] = (tmp[currentObjProp.prop] || new Set())).add(el);
 
 			currentObjProp = null;
-			
-
-			//return _eachBit(code, bindReset, el);
 		}
 
 		var addRepeat = (handler, el, group) => {
-			const msk = currentObjProp && currentObjProp.childMask || 0b1;
-
 			el2handlerRept.set(el, handler);
+			let last = null;
+console.log(currentObjProp)
+			currentObjProp.sliceParents.forEach(prnt => (repeatStore[last = prnt] || (repeatStore[prnt] = new Set())).add(el));
+
+			last = last.concat(currentObjProp.prop);
+			(repeatStore[last] || (repeatStore[last] = new Set())).add(el)
 
 			currentObjProp = null;
-
-			return _eachBit(msk, repeatStore, el);
 		}
 
 		var resetEl = elm => {
@@ -173,49 +159,41 @@ self.App = (() => {
 		var skipProxySetFlg = false;
 		var fromRepeat = false;
 
-		var buildData = (obj, deepLvl = 0, parentProp = []) => {
+		var buildData = (obj, deepLvl = 0, parentProps = []) => {
 			var matRow = (matrix[deepLvl]) || (matrix[deepLvl] = Object.create(null));
 
-			/*if (deepLvl !== 0) {
-				const cond = prnts[deepLvl - 1] != afProp;  
-				prnts = (prnts[deepLvl - 1]) && cond ? Array.from(prnts) : prnts;
-				if (afProp && cond) prnts[deepLvl - 1] = afProp;
-			}*/
+			var slice = parentProps.reduce((acc, p) => {
+				acc.push((acc[acc.length - 1] || '').concat(p));
+				return acc;
+			}, []);
 
 			return new Proxy(obj, {
-				//mask: code,
-				//nextCode: code,
-				//rootCode: rcode = deepLvl === 0 ? new Set().add(code) : new Set(rCode).add(code),
-				//get parents() {return deepLvl === 0 ? prnts : prnts.slice(0, deepLvl)},
-				//nullCnt: 1,
 				get pKeys() { return matRow; },
-				matrix,
-				sliceParents: parentProp.reduce((acc, p) => {
-					acc.push((acc[acc.length - 1] || '').concat(p));
-					return acc;
-				}, []),
+				sliceParents: slice,
+				lastKey: slice[slice.length - 1],
 
 				get: function(target, prop, receiver) {
 					if (prop === _IS_PROXY) return true;
 					if (prop === _DEEP) return deepLvl;
-					if (prop === _PRNTS) return Array.from(parentProp);
+					if (prop === _PRNTS) return parentProps;
+					if (prop === _MASK) return this.lastKey;
 
 					if (hasOwnProperty(target, prop)) {
 
-						if (!(prop in matRow)) matRow[prop] = parentProp.join('');
+						//if (!(prop in matRow)) matRow[prop] = parentProp.join('');
 
 						if (target[prop] != null) {
 							if ((typeof(target[prop]) === 'object') && !(target[prop][_IS_PROXY])) {
-								skipProxySetFlg = true;
-								parentProp.push(prop);
-								receiver[prop] = buildData(target[prop], deepLvl + 1, parentProp);
+								//skipProxySetFlg = true;
+								const selfParentProps = Array.from(parentProps);
+								selfParentProps.push(prop);
+								receiver[prop] = buildData(target[prop], deepLvl + 1, selfParentProps);
 								skipProxySetFlg = false;
 							}
 						}
 
 						if (needStoredGetterFlg) {
 							currentObjProp = Object.create(null);
-							//currentObjProp.mask = code;
 							currentObjProp.prop	= prop;
 							currentObjProp.obj = receiver;
 							currentObjProp.parents = receiver[_PRNTS];
@@ -234,30 +212,29 @@ self.App = (() => {
 				},
 
 				set: function(target, prop, val, receiver) {
-					if (!hasOwnProperty(target, prop)) return Reflect.set(target, prop, val, receiver);
+					if ((prop in target) && (!hasOwnProperty(target, prop))) return Reflect.set(target, prop, val, receiver);
 
-					if (!(prop in matRow)) matRow[prop] = parentProp.join();
+					//if (!(prop in matRow)) matRow[prop] = parentProp.join();
 
 					if ((!skipProxySetFlg) && (val) && (typeof(val) === 'object') && !(val[_IS_PROXY])) {
-						parentProp.push(prop);
-						val = buildData(val, deepLvl + 1, parentProp);
+						const selfParentProps = Array.from(parentProps);
+						selfParentProps.push(prop);
+						val = buildData(val, deepLvl + 1, selfParentProps);
 					}
 
 					const result = Reflect.set(target, prop, val, receiver);
 					if (skipProxySetFlg) return result;
 
-					/*let storebinds = null, storeRepeats = null;
 
-					const ncode = matRow[prop];
+					let storebinds = null, storeRepeats = null;
+					const key = this.sliceParents[this.sliceParents.length - 1];
 
-					if (storeRepeats = repeatStore[ncode]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el))&& tmp(true));
-*/
-					if (storebinds = bindReset[this.sliceParents]) storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && (!el2fromRepeat.has(tmp.res)) && tmp.res(true));
+					if (storeRepeats = repeatStore[key]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el))&& tmp(true));
 
-					if ((storebinds = bindUpd[this.sliceParents]) && (storebinds = storebinds[prop]))
+					if (storebinds = bindReset[key]) storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && (!el2fromRepeat.has(tmp.res)) && tmp.res(true));
+
+					if ((storebinds = bindUpd[key]) && (storebinds = storebinds[prop]))
 						storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && (!el2fromRepeat.has(tmp.upd)) && tmp.upd(true));
-					/*
-					dataStor.forEach((h, c) => ((c & code) === Math.min(c, code)) && h());*/
 
 					return result;
 				},
@@ -331,7 +308,7 @@ self.App = (() => {
 				fromRepeat = false;
 
 				if ((xrBindCallbackOrFlag != null) && bindHandle) {
-					if (!(storyCall && repeatStore[iter[_MASK]]))	
+					if (!(storyCall || repeatStore[iter[_MASK]]))	
 						addRepeat(extInterface.repeat.bind(null, elm, null, bindHandle, xrBindCallbackOrFlag, parents, nested), elm, group);
 
 					currentObjProp = null;
@@ -366,7 +343,7 @@ self.App = (() => {
 						bindHandle(newEl, key);
 				} else {
 					lastEl = (group[key] = updGroup[key]);
-					if (bindHandle) bindHandle(updGroup[key], key);
+					if (bindHandle) bindHandle(updGroup[key], key, fromParents(iter[_PRNTS]));
 				}
 
 				if (!nested) delete updGroup[key];

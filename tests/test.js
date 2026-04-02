@@ -24,12 +24,10 @@ const obj = {
 const myApp = App(App.eventTypeInput);
 const appData = myApp.buildData(obj);
 
-myApp.bind(`.i1`, appData.key.k1.l1.m11);
-/*
 const y = appData.key;
 const yy = appData.one;
 var tt;
-*/
+
 const nestedLoops = () => {
 	y.k1.l1 = {m1: 1, m11: 2,};
 
@@ -64,20 +62,20 @@ async function runTestArray() {
 	await render();
 	y.k1.l1 = [2, 5];
 
-	console.time(1);
+	//console.time(1);
 	for (let i = 1; i <= max; i++) {
 		myApp.xrBind(`.i3${i}`, x => x.value = y.k1.l1[0], (el) => y.k1.l1[0] = el.value);
 		myApp.bind(`.i1${i}`, y.k1.l1[0]);
 		myApp.repeat(`.i2${i}`, y.k1.l1, true);
 	}
-	console.timeEnd(1);
+	//console.timeEnd(1);
 
 	setTimeout(() => { y.k1 = {l1:[6, 8]}; }, 2000);
-	setTimeout(() => { y.k1.l1[3] = 11; myApp.unbind(`.i33`);}, 4000);
-	setTimeout(() => {y.k1.l1 = [12, 15, 17 ];}, 6000);
+	setTimeout(() => { y.k1.l1[3] = 11; /*myApp.unbind(`.i33`)*/;}, 4000);
+	/*setTimeout(() => {y.k1.l1 = [12, 15, 17 ];}, 6000);
 	setTimeout(() => delete y.k1, 8000);
 	setTimeout(() => y.k1 = {l1: [ 66, 77]}, 10_000);
-	setTimeout(() => y.k1.l1[0] = 100, 12_000);
+	setTimeout(() => y.k1.l1[0] = 100, 12_000);*/
 }
 
 async function runTestObject() {
