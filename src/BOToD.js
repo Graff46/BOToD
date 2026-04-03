@@ -76,7 +76,7 @@ self.App = (() => {
 		var addRepeat = (handler, el, group) => {
 			el2handlerRept.set(el, handler);
 			let last = null;
-console.log(currentObjProp)
+
 			currentObjProp.sliceParents.forEach(prnt => (repeatStore[last = prnt] || (repeatStore[prnt] = new Set())).add(el));
 
 			last = last.concat(currentObjProp.prop);
@@ -188,7 +188,7 @@ console.log(currentObjProp)
 								const selfParentProps = Array.from(parentProps);
 								selfParentProps.push(prop);
 								receiver[prop] = buildData(target[prop], deepLvl + 1, selfParentProps);
-								skipProxySetFlg = false;
+								//skipProxySetFlg = false;
 							}
 						}
 
@@ -229,7 +229,7 @@ console.log(currentObjProp)
 					let storebinds = null, storeRepeats = null;
 					const key = this.sliceParents[this.sliceParents.length - 1];
 
-					if (storeRepeats = repeatStore[key]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el))&& tmp(true));
+					if (storeRepeats = repeatStore[key]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el)) && tmp(true));
 
 					if (storebinds = bindReset[key]) storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && (!el2fromRepeat.has(tmp.res)) && tmp.res(true));
 
@@ -297,7 +297,7 @@ console.log(currentObjProp)
 			let iter;
 			const group = Object.create(null);
 			const updGroup = El2group.get(elm) || Object.create(null);
-
+	console.log(1, updGroup);		
 			if ((!iterObj) || iterObj[_IS_PROXY]) {
 				needStoredGetterFlg = true;
 
@@ -308,7 +308,7 @@ console.log(currentObjProp)
 				fromRepeat = false;
 
 				if ((xrBindCallbackOrFlag != null) && bindHandle) {
-					if (!(storyCall || repeatStore[iter[_MASK]]))	
+					if (storyCall ? !repeatStore[iter[_MASK]] : true)
 						addRepeat(extInterface.repeat.bind(null, elm, null, bindHandle, xrBindCallbackOrFlag, parents, nested), elm, group);
 
 					currentObjProp = null;
@@ -318,8 +318,7 @@ console.log(currentObjProp)
 				iter = iterObj;
 			}
 			fromRepeat = false;
-			El2group.set(elm, group);
-
+	console.log(1.5, updGroup);	
 			let newEl = null;
 			let lastEl = elm;
 			for (const key in iter) {
@@ -348,6 +347,8 @@ console.log(currentObjProp)
 
 				if (!nested) delete updGroup[key];
 			}
+console.log(2, group);
+			El2group.set(elm, group);
 
 			if (newEl) elm.hidden = true;
 

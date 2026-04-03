@@ -71,7 +71,7 @@ async function runTestArray() {
 	//console.timeEnd(1);
 
 	setTimeout(() => { y.k1 = {l1:[6, 8]}; }, 2000);
-	setTimeout(() => { y.k1.l1[3] = 11; /*myApp.unbind(`.i33`)*/;}, 4000);
+	//setTimeout(() => { y.k1.l1[3] = 11; /*myApp.unbind(`.i33`)*/;}, 4000);
 	/*setTimeout(() => {y.k1.l1 = [12, 15, 17 ];}, 6000);
 	setTimeout(() => delete y.k1, 8000);
 	setTimeout(() => y.k1 = {l1: [ 66, 77]}, 10_000);
