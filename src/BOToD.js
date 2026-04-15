@@ -303,7 +303,7 @@ self.App = (() => {
 			let iter;
 			const group = Object.create(null);
 			const updGroup = El2group.get(elm) || Object.create(null);
-	console.log(1, updGroup);		
+	
 			if ((!iterObj) || iterObj[_IS_PROXY]) {
 				needStoredGetterFlg = true;
 
@@ -324,7 +324,7 @@ self.App = (() => {
 				iter = iterObj;
 			}
 			fromRepeat = false;
-	console.log(1.5, El2group, elm, updGroup);	
+
 			let newEl = null;
 			let lastEl = elm;
 			for (const key in iter) {
@@ -353,7 +353,7 @@ self.App = (() => {
 
 				if (!nested) delete updGroup[key];
 			}
-console.log(2, group);
+
 			El2group.set(elm, group);
 
 			if (newEl) elm.hidden = true;
