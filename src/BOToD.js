@@ -52,7 +52,13 @@ self.App = (() => {
 		var extInterface = null;
 		var rootObj = null;
 
-		var fromParents = parents => parents.reduce((acc, p) => acc[p], rootObj);
+		var fromParents = parents => {
+			skipProxySetFlg = true;
+			const res = parents.reduce((acc, p) => acc[p], rootObj);
+			skipProxySetFlg = false;
+
+			return res;
+		}
 
 		var addBind = (handler, resHandler, el, isKey) => {
 			if (isKey) el2fromRepeat.add(handler).add(resHandler);
@@ -182,7 +188,7 @@ self.App = (() => {
 
 						//if (!(prop in matRow)) matRow[prop] = parentProp.join('');
 
-						if (target[prop] != null) {
+						if ((target[prop] != null) ) {
 							if ((typeof(target[prop]) === 'object') && !(target[prop][_IS_PROXY])) {
 								//skipProxySetFlg = true;
 								const selfParentProps = Array.from(parentProps);
@@ -318,7 +324,7 @@ self.App = (() => {
 				iter = iterObj;
 			}
 			fromRepeat = false;
-	console.log(1.5, updGroup);	
+	console.log(1.5, El2group, elm, updGroup);	
 			let newEl = null;
 			let lastEl = elm;
 			for (const key in iter) {
