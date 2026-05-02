@@ -43,7 +43,7 @@ const nestedLoops = () => {
 	setTimeout(() => { y.k1 = {l1: {m1: 47, m11: 69,}}; }, 2000);
 };
 
-var max = 1;
+var max = 3;
 async function render() {
 	let str = '';
 	for (let i = 1; i <= max; i++) {
@@ -64,8 +64,8 @@ async function runTestArray() {
 
 	//console.time(1);
 	for (let i = 1; i <= max; i++) {
-		myApp.xrBind(`.i3${i}`, x => x.value = y.k1.l1[0], (el) => y.k1.l1[0] = el.value);
-		myApp.bind(`.i1${i}`, y.k1.l1[0]);
+		//myApp.xrBind(`.i3${i}`, x => x.value = y.k1.l1[0], (el) => y.k1.l1[0] = el.value);
+		//myApp.bind(`.i1${i}`, y.k1.l1[0]);
 		myApp.repeat(`.i2${i}`, y.k1.l1, true);
 	}
 	//console.timeEnd(1);
@@ -73,7 +73,7 @@ async function runTestArray() {
 	setTimeout(() => { y.k1 = {l1:[6, 8]}; }, 2000);
 	setTimeout(() => { y.k1.l1[3] = 11; /*myApp.unbind(`.i33`)*/;}, 4000);
 	setTimeout(() => {y.k1.l1 = [12, 15, 17 ];}, 6000);
-	setTimeout(() => delete y.k1, 8000);
+	setTimeout(() => {self.ff1 = true; delete y.k1}, 8000);
 	setTimeout(() => y.k1 = {l1: [ 66, 77]}, 10_000);
 	setTimeout(() => y.k1.l1[0] = 100, 12_000);
 }
