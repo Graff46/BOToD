@@ -10,7 +10,7 @@ self.App = (() => {
 	var _MASK = Symbol('mask');
 	var _DEEP = Symbol('deep');
 	var _PRNTS = Symbol('prnts');
-	var _RCODE = Symbol('rootcode');
+	var _FORALL = Symbol('forAll');
 
 	var __inptsTyps = {checkbox: true, radio: true};
 
@@ -47,8 +47,6 @@ self.App = (() => {
 		var maxCode = 1;
 		var matrix = Object.create(null);
 
-		var dataStor = new Map();
-
 		var extInterface = null;
 		var rootObj = null;
 
@@ -60,35 +58,30 @@ self.App = (() => {
 			return res;
 		}
 
-		var addBind = (handler, resHandler, el, isKey) => {
-			if (isKey) el2fromRepeat.add(handler).add(resHandler);
+		var addBind = (handler, resHandler, el, fromRepaet) => {
+			if (fromRepaet) el2fromRepeat.add(handler).add(resHandler);
 
-			let story = Object.create(null);
+			const story = Object.create(null);
 			story.upd = handler;
 			story.res = resHandler;
 
 			el2handlerBind.set(el, story);
 
-			currentObjProp.sliceParents.forEach(prnt => (bindReset[prnt] || (bindReset[prnt] = new Set())).add(el));
-
-			const collc = currentObjProp.sliceParents[currentObjProp.sliceParents.length - 1];
-;
-			(tmp = bindUpd[collc]) || (tmp = bindUpd[collc] = Object.create(null));
-			(tmp[currentObjProp.prop] = (tmp[currentObjProp.prop] || new Set())).add(el);
+			var floor = currentObjProp.lvl;
+			matrix[floor--][currentObjProp.prop].add(el);
+			currentObjProp.pvector.reverse().forEach((itm, i) => matrix[floor - i][itm].add(el));
 
 			currentObjProp = null;
 		}
 
 		var addRepeat = (handler, el, obj, parents) => {
 			el2handlerRept.set(el, {obj, handler, parents});
-			let last = '';
 
-			if (currentObjProp) {
-				currentObjProp.sliceParents.forEach(prnt => (repeatStore[last = prnt] || (repeatStore[last = prnt] = new Set())).add(el));
-				last = last.concat(currentObjProp.prop);
-			}
-
-			(repeatStore[last] || (repeatStore[last] = new Set())).add(el)
+			var floor = currentObjProp.lvl;
+			matrix[floor][currentObjProp.prop].add(el);
+			((matrix[++floor][_FORALL]) || (matrix[floor][_FORALL] = new Set())).add(el);
+			floor -= 2;
+			currentObjProp.pvector.reverse().forEach((itm, i) => matrix[floor - i][itm].add(el));			
 
 			currentObjProp = null;
 		}
@@ -169,27 +162,17 @@ self.App = (() => {
 		var buildData = (obj, deepLvl = 0, parentProps = []) => {
 			var matRow = (matrix[deepLvl]) || (matrix[deepLvl] = Object.create(null));
 
-			var slice = parentProps.reduce((acc, p) => {
-				acc.push((acc[acc.length - 1] || '').concat(p));
-				return acc;
-			}, []);
-
-			slice.unshift('');
-
 			return new Proxy(obj, {
 				get pKeys() { return matRow; },
-				sliceParents: slice,
-				lastKey: slice[slice.length - 1],
 
 				get: function(target, prop, receiver) {
 					if (prop === _IS_PROXY) return true;
 					if (prop === _DEEP) return deepLvl;
 					if (prop === _PRNTS) return parentProps;
-					if (prop === _MASK) return this.lastKey;
 
 					if (hasOwnProperty(target, prop)) {
 
-						//if (!(prop in matRow)) matRow[prop] = parentProp.join('');
+						if (!(prop in matRow)) matRow[prop] = new Set();
 
 						if ((target[prop] != null) ) {
 							if ((typeof(target[prop]) === 'object') && !(target[prop][_IS_PROXY])) {
@@ -205,14 +188,9 @@ self.App = (() => {
 							currentObjProp = Object.create(null);
 							currentObjProp.prop	= prop;
 							currentObjProp.obj = receiver;
-							currentObjProp.parents = receiver[_PRNTS];
-							currentObjProp.sliceParents = this.sliceParents;
+							currentObjProp.lvl = deepLvl;
+							currentObjProp.pvector = Array.from(parentProps);
 
-							if (fromRepeat) {
-								needStoredGetterFlg = false;
-								currentObjProp.val = receiver[prop];
-								needStoredGetterFlg = true;
-							}
 							Object.freeze(currentObjProp);
 						}
 					}
@@ -223,7 +201,7 @@ self.App = (() => {
 				set: function(target, prop, val, receiver) {
 					if ((prop in target) && (!hasOwnProperty(target, prop))) return Reflect.set(target, prop, val, receiver);
 
-					//if (!(prop in matRow)) matRow[prop] = parentProp.join();
+					if (!(prop in matRow)) matRow[prop] = new Set();
 
 					if ((!skipProxySetFlg) && (val) && (typeof(val) === 'object') && !(val[_IS_PROXY])) {
 						const selfParentProps = Array.from(parentProps);
@@ -234,31 +212,59 @@ self.App = (() => {
 					const result = Reflect.set(target, prop, val, receiver);
 					if (skipProxySetFlg) return result;
 
+					if (matRow[_FORALL]) {
+						matRow[_FORALL].forEach(el => {
+							var tmp2, tmp1 = null;						
+							if ((tmp1 = el2handlerRept.get(el)) && ((tmp2 = fromParents(tmp1.parents)) !== tmp1.obj))
+								tmp1.handler(tmp2);
+						});
+					}
 
-					let storebinds = null, storeRepeats = null;
-					const key = this.lastKey || '';
-					var tmp2 = null;
+					matRow[prop].forEach(el => {
+						var tmp2, tmp1 = null;						
+						if ((tmp1 = el2handlerRept.get(el)) && ((tmp2 = fromParents(tmp1.parents)) !== tmp1.obj))
+							tmp1.handler(tmp2);
 
-					if (storeRepeats = repeatStore[key]) storeRepeats.forEach(el => (tmp = el2handlerRept.get(el)) && ((tmp2 = fromParents(tmp.parents)) !== tmp.obj) && tmp.handler(tmp2));
-
-					if (storebinds = bindReset[key]) storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && (!el2fromRepeat.has(tmp.res)) && tmp.res(true));
-
-					if ((storebinds = bindUpd[key]) && (storebinds = storebinds[prop]))
-						storebinds.forEach(el => (tmp = el2handlerBind.get(el)) && (!el2fromRepeat.has(tmp.upd)) && tmp.upd(true));
-
+						if (tmp1 = el2handlerBind.get(el)) {
+							if (!el2fromRepeat.has(tmp1.res)) tmp1.res(true);
+							if (!el2fromRepeat.has(tmp1.upd)) tmp1.upd(true);
+						}
+					});
+					
 					return result;
 				},
 
 				deleteProperty: function(target, prop) {
-					/*if (!hasOwnProperty(target, prop))
+					if (!hasOwnProperty(target, prop))
 						return Reflect.deleteProperty(target, prop);
 
-					if ((target[prop] instanceof Object) && target[prop][_IS_PROXY]) 
-						_unbindObj(target, true, prop);*/
+					/*if ((typeof(target[prop]) === 'object') && target[prop][_IS_PROXY]) 
+						_unbindObj(target, true, prop);
 
-					delete matRow[prop];
+					delete matRow[prop];*/
 
-					return Reflect.deleteProperty(target, prop);
+					const result = Reflect.deleteProperty(target, prop);
+
+					if (matRow[_FORALL]) {
+						matRow[_FORALL].forEach(el => {
+							var tmp2, tmp1 = null;				
+							if ((tmp1 = el2handlerRept.get(el)) && ((tmp2 = fromParents(tmp1.parents)) !== tmp1.obj))
+								tmp1.handler(tmp2);
+						});
+					}
+
+					matRow[prop].forEach(el => {
+						var tmp2, tmp1 = null;						
+						if ((tmp1 = el2handlerRept.get(el)) && ((tmp2 = fromParents(tmp1.parents)) !== tmp1.obj))
+							tmp1.handler(tmp2);
+
+						if (tmp1 = el2handlerBind.get(el)) {
+							if (!el2fromRepeat.has(tmp1.res)) tmp1.res(true);
+							if (!el2fromRepeat.has(tmp1.upd)) tmp1.upd(true);
+						}
+					});
+
+					return result;
 				},
 			});
 		}
@@ -354,8 +360,8 @@ self.App = (() => {
 				needStoredGetterFlg = false;
 				fromRepeat = false;
 
-				if ((xrBindCallbackOrFlag != null) && bindHandle) {
-					if (objFrmParents ? !repeatStore[iter[_MASK]] : true)
+				if ((xrBindCallbackOrFlag != null) && bindHandle) { el2handlerRept.get(el)
+					if (/*objFrmParents ?*/ Boolean(currentObjProp) /*: true*/)
 						addRepeat(extInterface.repeat.bind(null, elm, null, bindHandle, xrBindCallbackOrFlag, parents, nested), elm, iter, parents);
 
 					currentObjProp = null;
@@ -473,8 +479,6 @@ self.App = (() => {
 
 			return nested;
 		}
-
-		const dataBind = (data, handler) => dataStor.set(data[_MASK], handler);
 
 		var listSync = (el, iterObj, bindHandle, callback, callbackEl) => {
 			const elm = getEl(el);
