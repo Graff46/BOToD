@@ -52,7 +52,7 @@ self.App = (() => {
 
 		var fromParents = parents => {
 			skipProxySetFlg = true;
-			const res = parents.reduce((acc, p) => acc[p], rootObj);
+			const res = parents.reduce((acc, p) => acc ? acc[p] : null, rootObj);
 			skipProxySetFlg = false;
 
 			return res;
