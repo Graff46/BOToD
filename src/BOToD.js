@@ -79,8 +79,10 @@ self.App = (() => {
 
 			var floor = currentObjProp.lvl;
 			matrix[floor][currentObjProp.prop].add(el);
+
 			((matrix[++floor][_FORALL]) || (matrix[floor][_FORALL] = new Set())).add(el);
 			floor -= 2;
+			
 			currentObjProp.pvector.reverse().forEach((itm, i) => matrix[floor - i][itm].add(el));			
 
 			currentObjProp = null;
@@ -93,8 +95,7 @@ self.App = (() => {
 
 			const group = El2group.get(elm);
 			if (group) {
-				var fragment = document.createDocumentFragment();
-				Object.values(group).forEach(el => fragment.append(el));
+				Object.values(group).forEach(el => el.remove());
 				elm.hidden = false;
 			};
 
@@ -116,43 +117,11 @@ self.App = (() => {
 			return resetEl(elm);
 		}
 
-		var _unbindObj = (obj, onlyReset, prop) => {
-			obj = prop ? obj[prop] : currentObjProp.obj;
+		var _unbindObj = (obj, prop) => {
+			delete matrix[currentObjProp.lvl || obj[_DEEP]][currentObjProp.prop || prop];
 
-			var ldeep = obj[_DEEP];
-			if ((!onlyReset) && (tmp = matrix[ldeep - 1])) delete tmp[prop || currentObjProp.prop];
 			currentObjProp = null;
 			needStoredGetterFlg = false;
-
-			var handler = onlyReset ? resetEl : _unbind;
-			var row = null;
-
-			const msk = obj[_MASK];
-			var code = msk;
-			for (let i = 1, pow2 = 1; code <= maxCode; i++) {
-				(i === pow2) ? (code = msk * i) && (pow2 *= 2) : code++;
-
-				if (!onlyReset) {
-					if (code % 2)
-						row = matrix[ldeep++];
-					else
-						for (let prp in row) if (row[prp] === code) delete row[prp];
-				}
-
-				[repeatStore, bindReset].forEach(stor => {
-					if ((stor[code]) && (tmp = stor[code])) {
-						tmp.forEach(el => handler(el));
-						if (!onlyReset) delete acc[code];
-					}
-				});
-
-				if ((tmp = bindUpd[code]) && (tmp = Object.values(tmp))) {
-					Object.values(tmp).forEach(itm => itm.forEach(el => handler(el)));
-					if (!onlyReset) delete bindUpd[code];
-				}
-			}
-
-			return obj;
 		}
 
 		var needStoredGetterFlg = false;
@@ -161,6 +130,26 @@ self.App = (() => {
 
 		var buildData = (obj, deepLvl = 0, parentProps = []) => {
 			var matRow = (matrix[deepLvl]) || (matrix[deepLvl] = Object.create(null));
+
+			var __checkBinds = prop => {
+				var tmp1, tmp2 = null;
+
+				var checkRepaet = el => {
+					if ((tmp1 = el2handlerRept.get(el)) && ((tmp2 = fromParents(tmp1.parents)) !== tmp1.obj))
+						tmp1.handler(tmp2);
+				};
+
+				if (tmp1 = matRow[_FORALL]) tmp1.forEach(checkRepaet);
+
+				matRow[prop].forEach(el => {			
+					checkRepaet(el);
+
+					if (tmp1 = el2handlerBind.get(el)) {
+						if (!el2fromRepeat.has(tmp1.res)) tmp1.res(true);
+						if (!el2fromRepeat.has(tmp1.upd)) tmp1.upd(true);
+					}
+				});
+			};
 
 			return new Proxy(obj, {
 				get pKeys() { return matRow; },
@@ -212,24 +201,7 @@ self.App = (() => {
 					const result = Reflect.set(target, prop, val, receiver);
 					if (skipProxySetFlg) return result;
 
-					if (matRow[_FORALL]) {
-						matRow[_FORALL].forEach(el => {
-							var tmp2, tmp1 = null;						
-							if ((tmp1 = el2handlerRept.get(el)) && ((tmp2 = fromParents(tmp1.parents)) !== tmp1.obj))
-								tmp1.handler(tmp2);
-						});
-					}
-
-					matRow[prop].forEach(el => {
-						var tmp2, tmp1 = null;						
-						if ((tmp1 = el2handlerRept.get(el)) && ((tmp2 = fromParents(tmp1.parents)) !== tmp1.obj))
-							tmp1.handler(tmp2);
-
-						if (tmp1 = el2handlerBind.get(el)) {
-							if (!el2fromRepeat.has(tmp1.res)) tmp1.res(true);
-							if (!el2fromRepeat.has(tmp1.upd)) tmp1.upd(true);
-						}
-					});
+					__checkBinds(prop);
 					
 					return result;
 				},
@@ -238,31 +210,9 @@ self.App = (() => {
 					if (!hasOwnProperty(target, prop))
 						return Reflect.deleteProperty(target, prop);
 
-					/*if ((typeof(target[prop]) === 'object') && target[prop][_IS_PROXY]) 
-						_unbindObj(target, true, prop);
-
-					delete matRow[prop];*/
-
 					const result = Reflect.deleteProperty(target, prop);
 
-					if (matRow[_FORALL]) {
-						matRow[_FORALL].forEach(el => {
-							var tmp2, tmp1 = null;				
-							if ((tmp1 = el2handlerRept.get(el)) && ((tmp2 = fromParents(tmp1.parents)) !== tmp1.obj))
-								tmp1.handler(tmp2);
-						});
-					}
-
-					matRow[prop].forEach(el => {
-						var tmp2, tmp1 = null;						
-						if ((tmp1 = el2handlerRept.get(el)) && ((tmp2 = fromParents(tmp1.parents)) !== tmp1.obj))
-							tmp1.handler(tmp2);
-
-						if (tmp1 = el2handlerBind.get(el)) {
-							if (!el2fromRepeat.has(tmp1.res)) tmp1.res(true);
-							if (!el2fromRepeat.has(tmp1.upd)) tmp1.upd(true);
-						}
-					});
+					__checkBinds(prop);
 
 					return result;
 				},
@@ -271,6 +221,7 @@ self.App = (() => {
 
 		const bind = (elSel, val, key) => {
 			var parents = Array.from(currentObjProp.obj[_PRNTS]), prp = currentObjProp.prop;
+
 			const handler = (el, k) => globalHandler(el, k || prp, fromParents(parents));
 
 			return xrBind(elSel, handler, globalCallback, key, true);
@@ -284,6 +235,7 @@ self.App = (() => {
 			needStoredGetterFlg = false;
 
 			var cObjProp = __needCurrObj ? Object.create(null) : null;
+
 			if (__needCurrObj) {
 				cObjProp.obj = currentObjProp.obj;
 				cObjProp.prop = currentObjProp.prop;
@@ -335,9 +287,8 @@ self.App = (() => {
 					bindHandle(el, key, iterObj);
 			}
 
-			for (let y = i; y < els.length; y++) {
+			for (let y = i; y < els.length; y++)
 				els[y].hidden = true;
-			}
 		}
 
 		var repeat = (el, iterObj, bindHandle, xrBindCallbackOrFlag = true, prnts, nested, objFrmParents) => {
@@ -370,6 +321,7 @@ self.App = (() => {
 				xrBindCallbackOrFlag = false;
 				iter = iterObj;
 			}
+
 			fromRepeat = false;
 
 			let newEl = null;
@@ -424,6 +376,7 @@ self.App = (() => {
 			var stack = [];
 			
 			var itm = listParam[0];
+
 			stack[0] = (el, data) => repeat(
 				parseSelector(el, itm[0]),
 				data,
